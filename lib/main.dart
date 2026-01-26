@@ -77,7 +77,6 @@ class SomaApp extends StatelessWidget {
           ),
         ),
       ),
-      // Personnalisation de la barre de défilement
       scrollbarTheme: ScrollbarThemeData(
         thickness: MaterialStateProperty.all(8.0),
         thumbVisibility: MaterialStateProperty.all(true),
@@ -102,6 +101,8 @@ class SomaApp extends StatelessWidget {
         '/blog': (context) => const BlogPage(),
         '/about': (context) => const AboutPage(),
         '/contact': (context) => const ContactPage(),
+        '/nos-precepteurs': (context) => const NosPrecepteursPage(),
+        '/devenir-precepteur': (context) => const DevenirPrecepteurPage(),
       },
     );
   }
@@ -119,11 +120,9 @@ class SomaLandingPage extends StatelessWidget {
         elevation: 0,
         title: const _BrandMark(textColor: Colors.white, logoHeight: 28),
         actions: [
-          // Boutons de navigation pour desktop
           if (MediaQuery.of(context).size.width > 900) ...[
             TextButton(
               onPressed: () {
-                // Navigation vers la page Services
                 Navigator.pushNamed(context, '/services');
               },
               child: const Text(
@@ -134,7 +133,6 @@ class SomaLandingPage extends StatelessWidget {
             const SizedBox(width: 16),
             TextButton(
               onPressed: () {
-                // Navigation vers la page Blog
                 Navigator.pushNamed(context, '/blog');
               },
               child: const Text(
@@ -145,7 +143,6 @@ class SomaLandingPage extends StatelessWidget {
             const SizedBox(width: 16),
             TextButton(
               onPressed: () {
-                // Navigation vers la page À propos
                 Navigator.pushNamed(context, '/about');
               },
               child: const Text(
@@ -156,7 +153,6 @@ class SomaLandingPage extends StatelessWidget {
             const SizedBox(width: 16),
             TextButton(
               onPressed: () {
-                // Navigation vers la page Contact
                 Navigator.pushNamed(context, '/contact');
               },
               child: const Text(
@@ -166,23 +162,20 @@ class SomaLandingPage extends StatelessWidget {
             ),
             const SizedBox(width: 24),
             _GhostButton(
-              label: 'Trouver un précepteur',
+              label: 'Nos précepteurs',
               onPressed: () {
-                // Ouvrir un formulaire pour trouver un précepteur
-                _showFindTutorModal(context);
+                Navigator.pushNamed(context, '/nos-precepteurs');
               },
             ),
             const SizedBox(width: 12),
             _CtaButton(
               label: 'Devenir précepteur',
               onPressed: () {
-                // Ouvrir un formulaire pour devenir précepteur
-                _showBecomeTutorModal(context);
+                Navigator.pushNamed(context, '/devenir-precepteur');
               },
             ),
             const SizedBox(width: 24),
           ] else ...[
-            // Menu burger pour mobile
             IconButton(
               icon: const Icon(Icons.menu, color: Colors.white),
               onPressed: () => _showNavSheet(context),
@@ -204,237 +197,1732 @@ class SomaLandingPage extends StatelessWidget {
       ),
     );
   }
-
-  // Fonction pour ouvrir le modal "Trouver un précepteur"
-  void _showFindTutorModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => _TutorModal(
-        title: 'Trouver un précepteur',
-        description: 'Remplissez ce formulaire pour trouver le précepteur idéal pour votre enfant.',
-        submitText: 'Rechercher',
-        onSubmit: () {
-          // Logique pour rechercher un précepteur
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Recherche de précepteur lancée !'),
-              backgroundColor: kSecondaryColor,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // Fonction pour ouvrir le modal "Devenir précepteur"
-  void _showBecomeTutorModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => _TutorModal(
-        title: 'Devenir précepteur',
-        description: 'Rejoignez notre plateforme et aidez les élèves à réussir.',
-        submitText: 'Postuler',
-        onSubmit: () {
-          // Logique pour postuler comme précepteur
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Candidature envoyée avec succès !'),
-              backgroundColor: kSecondaryColor,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        },
-      ),
-    );
-  }
 }
 
-// Modal réutilisable pour les formulaires
-class _TutorModal extends StatefulWidget {
-  final String title;
-  final String description;
-  final String submitText;
-  final VoidCallback onSubmit;
-
-  const _TutorModal({
-    required this.title,
-    required this.description,
-    required this.submitText,
-    required this.onSubmit,
-  });
+// ====== PAGE NOS PRÉCEPTEURS ======
+class NosPrecepteursPage extends StatefulWidget {
+  const NosPrecepteursPage({super.key});
 
   @override
-  State<_TutorModal> createState() => _TutorModalState();
+  State<NosPrecepteursPage> createState() => _NosPrecepteursPageState();
 }
 
-class _TutorModalState extends State<_TutorModal> {
+class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+  
+  final _parentNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _messageController = TextEditingController();
+  final _communeController = TextEditingController();
+  final _quartierController = TextEditingController();
+  final _avenueController = TextEditingController();
+  final _numeroController = TextEditingController();
+  final _classeController = TextEditingController();
+  
+  String? _niveauScolaire;
+  final Map<String, bool> _matieresSelectionnees = {
+    'Mathématiques': false,
+    'Physique': false,
+    'Chimie': false,
+    'Français': false,
+    'Anglais': false,
+    'Dessin Industriel': false,
+    'Autres': false,
+  };
+  String? _frequenceSouhaitee;
+
+  final List<String> _niveauxScolaires = [
+    'Primaire',
+    'Secondaire',
+    'Université'
+  ];
+  
+  final List<String> _frequences = [
+    '02 fois/semaine',
+    '03 fois/semaine',
+    '04 fois/semaine',
+    'À définir avec le précepteur'
+  ];
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
+    _parentNameController.dispose();
     _phoneController.dispose();
-    _messageController.dispose();
+    _communeController.dispose();
+    _quartierController.dispose();
+    _avenueController.dispose();
+    _numeroController.dispose();
+    _classeController.dispose();
     super.dispose();
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      final matieresSelectionnees = _matieresSelectionnees.entries
+          .where((entry) => entry.value)
+          .map((entry) => entry.key)
+          .toList();
+      
+      if (matieresSelectionnees.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez sélectionner au moins une matière'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+      
+      if (_niveauScolaire == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez sélectionner le niveau scolaire'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+      
+      if (_frequenceSouhaitee == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez sélectionner la fréquence souhaitée'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      // Afficher une confirmation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Demande envoyée avec succès ! Nous vous contacterons bientôt.'),
+          backgroundColor: kSecondaryColor,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      _formKey.currentState!.reset();
+      setState(() {
+        _niveauScolaire = null;
+        _frequenceSouhaitee = null;
+        _matieresSelectionnees.forEach((key, value) {
+          _matieresSelectionnees[key] = false;
+        });
+      });
+
+      Navigator.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: kDarkColor,
+        title: const _BrandMark(textColor: Colors.white, logoHeight: 28),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      child: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      widget.title,
-                      style: GoogleFonts.inter(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: kDarkColor,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close, color: kTextLight),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
                 Text(
-                  widget.description,
+                  'NOS PRÉCEPTEURS',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: kTextLight,
+                    fontWeight: FontWeight.w600,
+                    color: kPrimaryColor,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Trouvez le précepteur idéal pour votre enfant',
+                  style: GoogleFonts.inter(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    color: kDarkColor,
+                    height: 1.2,
                   ),
                 ),
                 const SizedBox(height: 24),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Nom complet',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: Icon(Icons.person, color: kPrimaryColor),
+                const Divider(),
+                const SizedBox(height: 40),
+                
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  margin: const EdgeInsets.only(bottom: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer votre nom';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: Icon(Icons.email, color: kPrimaryColor),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer votre email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Email invalide';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: InputDecoration(
-                    labelText: 'Téléphone',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: Icon(Icons.phone, color: kPrimaryColor),
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _messageController,
-                  decoration: InputDecoration(
-                    labelText: 'Message',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: Icon(Icons.message, color: kPrimaryColor),
-                  ),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: kPrimaryColor),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.school, size: 32, color: kPrimaryColor),
+                          const SizedBox(width: 16),
+                          Text(
+                            'Informations sur l\'élève',
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          'Annuler',
-                          style: GoogleFonts.inter(
-                            color: kPrimaryColor,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      Text(
+                        '1. Niveau scolaire *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            widget.onSubmit();
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: _niveauScolaire,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Sélectionnez le niveau scolaire',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                        ),
+                        items: _niveauxScolaires.map((String niveau) {
+                          return DropdownMenuItem<String>(
+                            value: niveau,
+                            child: Text(niveau),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _niveauScolaire = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      Text(
+                        '2. Classe ou année',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _classeController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Ex: 6ème primaire, 4ème secondaire, 2ème année universitaire',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      Text(
+                        '3. Matière(s) à renforcer *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Sélectionnez une ou plusieurs matières :',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: kTextLight,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 12,
+                        children: _matieresSelectionnees.keys.map((matiere) {
+                          return FilterChip(
+                            label: Text(matiere),
+                            selected: _matieresSelectionnees[matiere]!,
+                            onSelected: (bool selected) {
+                              setState(() {
+                                _matieresSelectionnees[matiere] = selected;
+                              });
+                            },
+                            selectedColor: kPrimaryColor.withOpacity(0.2),
+                            checkmarkColor: kPrimaryColor,
+                            labelStyle: GoogleFonts.inter(
+                              color: _matieresSelectionnees[matiere]! ? kPrimaryColor : kDarkColor,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      Text(
+                        '4. Fréquence souhaitée par semaine *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: _frequenceSouhaitee,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Sélectionnez la fréquence',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                        ),
+                        items: _frequences.map((String frequence) {
+                          return DropdownMenuItem<String>(
+                            value: frequence,
+                            child: Text(frequence),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _frequenceSouhaitee = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  margin: const EdgeInsets.only(bottom: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.contact_page, size: 32, color: kPrimaryColor),
+                          const SizedBox(width: 16),
+                          Text(
+                            'Contacts et Adresse du Parent',
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      Text(
+                        'Prénom et Nom *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _parentNameController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Votre nom complet',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                          prefixIcon: Icon(Icons.person, color: kPrimaryColor),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      Text(
+                        'Numéro de Téléphone *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _phoneController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Ex: +243 999 867 334',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                          prefixIcon: Icon(Icons.phone, color: kPrimaryColor),
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          if (value.length < 9) {
+                            return 'Numéro de téléphone invalide';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (constraints.maxWidth > 600) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Commune *',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: kDarkColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _communeController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          hintText: 'Nom de la commune',
+                                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                                        ),
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Ce champ est obligatoire';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Quartier *',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: kDarkColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _quartierController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          hintText: 'Nom du quartier',
+                                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                                        ),
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Ce champ est obligatoire';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Commune *',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _communeController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    hintText: 'Nom de la commune',
+                                    hintStyle: GoogleFonts.inter(color: kTextLight),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Ce champ est obligatoire';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Quartier *',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _quartierController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    hintText: 'Nom du quartier',
+                                    hintStyle: GoogleFonts.inter(color: kTextLight),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Ce champ est obligatoire';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            );
                           }
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kSecondaryColor,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (constraints.maxWidth > 600) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Avenue',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: kDarkColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _avenueController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          hintText: 'Nom de l\'avenue',
+                                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'N°',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: kDarkColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _numeroController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          hintText: 'Numéro',
+                                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Avenue',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _avenueController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    hintText: 'Nom de l\'avenue',
+                                    hintStyle: GoogleFonts.inter(color: kTextLight),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'N°',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _numeroController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    hintText: 'Numéro',
+                                    hintStyle: GoogleFonts.inter(color: kTextLight),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: kPrimaryColor, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
                         child: Text(
-                          widget.submitText,
+                          'N.B : Après avoir complété toutes ces informations, appuyez sur le bouton "Soumettre la demande" pour que nous puissions recevoir directement la demande dans notre boîte mail.',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: kDarkColor,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                
+                const SizedBox(height: 32),
+                
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kSecondaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      textStyle: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: const Text('SOUMETTRE LA DEMANDE'),
+                  ),
+                ),
+                
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ====== PAGE DEVENIR PRÉCEPTEUR ======
+class DevenirPrecepteurPage extends StatefulWidget {
+  const DevenirPrecepteurPage({super.key});
+
+  @override
+  State<DevenirPrecepteurPage> createState() => _DevenirPrecepteurPageState();
+}
+
+class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
+  final _formKey = GlobalKey<FormState>();
+  
+  final _nomController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _communeController = TextEditingController();
+  final _quartierController = TextEditingController();
+  final _niveauEtudesController = TextEditingController();
+  final _experienceController = TextEditingController();
+  
+  // Variables pour les sélections
+  String? _domaineCompetence;
+  bool? _hasExperience;
+  
+  // Domaines prioritaires (cases à cocher)
+  final Map<String, bool> _domainesPrioritaires = {
+    'Mathématiques': false,
+    'Physique – Chimie': false,
+    'Français – Anglais': false,
+    'Autres matières scolaires': false,
+    'Conception Assistée par Ordinateur (AutoCAD, SOLIDWORKS)': false,
+    'Système d\'Information Géographique (ArcGIS)': false,
+  };
+  
+  // Liste pour le domaine de compétence
+  final List<String> _domainesCompetences = [
+    'Mathématiques',
+    'Physique',
+    'Chimie',
+    'Français',
+    'Anglais',
+    'Dessin Industriel',
+    'Autres'
+  ];
+
+  // Variables pour les fichiers
+  String? _cvFileName;
+  String? _cniFileName;
+
+  @override
+  void dispose() {
+    _nomController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _communeController.dispose();
+    _quartierController.dispose();
+    _niveauEtudesController.dispose();
+    _experienceController.dispose();
+    super.dispose();
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      // Vérifier qu'au moins un domaine prioritaire est sélectionné
+      final domainesSelectionnes = _domainesPrioritaires.entries
+          .where((entry) => entry.value)
+          .map((entry) => entry.key)
+          .toList();
+      
+      if (domainesSelectionnes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez sélectionner au moins un domaine prioritaire'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+      
+      // Vérifier que le domaine de compétence est sélectionné
+      if (_domaineCompetence == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez sélectionner votre domaine de compétence'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+      
+      // Vérifier l'expérience
+      if (_hasExperience == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez indiquer si vous avez de l\'expérience en enseignement'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      // Afficher une confirmation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Candidature envoyée avec succès ! Nous vous contacterons bientôt.'),
+          backgroundColor: kSecondaryColor,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Réinitialiser le formulaire
+      _formKey.currentState!.reset();
+      setState(() {
+        _domaineCompetence = null;
+        _hasExperience = null;
+        _cvFileName = null;
+        _cniFileName = null;
+        _domainesPrioritaires.forEach((key, value) {
+          _domainesPrioritaires[key] = false;
+        });
+      });
+
+      // Fermer la page ou retourner à l'accueil
+      Navigator.pop(context);
+    }
+  }
+
+  // Fonction pour simuler le téléversement de fichiers
+  void _simulerTeleversement(String type) async {
+    // Simuler un délai de téléversement
+    await Future.delayed(const Duration(seconds: 1));
+    
+    setState(() {
+      if (type == 'cv') {
+        _cvFileName = 'CV_${_nomController.text.isNotEmpty ? _nomController.text.split(' ').first : 'Candidat'}.pdf';
+      } else if (type == 'cni') {
+        _cniFileName = 'CNI_${_nomController.text.isNotEmpty ? _nomController.text.split(' ').first : 'Candidat'}.pdf';
+      }
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Fichier ${type == 'cv' ? 'CV' : 'Carte d\'identité'} téléversé avec succès !'),
+        backgroundColor: kSecondaryColor,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: kDarkColor,
+        title: const _BrandMark(textColor: Colors.white, logoHeight: 28),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'DEVENIR PRÉCEPTEUR',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: kPrimaryColor,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Rejoignez une plateforme éducative de confiance',
+                  style: GoogleFonts.inter(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    color: kDarkColor,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 40),
+                
+                // Mot d'accroche (sans titre)
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  margin: const EdgeInsets.only(bottom: 32),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: kPrimaryColor.withOpacity(0.2), width: 1),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.handshake, size: 32, color: kPrimaryColor),
+                          const SizedBox(width: 16),
+                          Text(
+                            'Rejoignez notre communauté éducative',
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Rejoignez une plateforme éducative de confiance et accompagnez les apprenants vers la réussite.',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: kTextDark,
+                          height: 1.6,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Section 1 : Profils Recherchés
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  margin: const EdgeInsets.only(bottom: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.groups, size: 32, color: kPrimaryColor),
+                          const SizedBox(width: 16),
+                          Text(
+                            '1. Profils Recherchés',
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'SOMA est ouvert à toutes catégories des scientifiques et passionnés de la pédagogie ayant :',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: kTextDark,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const _FeatureList(
+                        features: [
+                          'La maîtrise avérée de la matière enseignée',
+                          'Une capacité à expliquer clairement',
+                          'Le sens des responsabilités et ponctualité',
+                          'Une bonne communication avec les apprenants et les parents',
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nous accueillons :',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const _FeatureList(
+                        features: [
+                          'Les étudiants universitaires avancés',
+                          'Enseignants / formateurs',
+                          'Professionnels qualifiés dans leur domaine',
+                          'Les passionnés par la transmission du savoir',
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Section 2 : Domaines prioritaires
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  margin: const EdgeInsets.only(bottom: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.category, size: 32, color: kPrimaryColor),
+                          const SizedBox(width: 16),
+                          Text(
+                            '2. Domaines prioritaires',
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Sélectionnez un ou plusieurs domaines :',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: kTextDark,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: _domainesPrioritaires.keys.map((domaine) {
+                          return FilterChip(
+                            label: Text(domaine),
+                            selected: _domainesPrioritaires[domaine]!,
+                            onSelected: (bool selected) {
+                              setState(() {
+                                _domainesPrioritaires[domaine] = selected;
+                              });
+                            },
+                            selectedColor: kPrimaryColor.withOpacity(0.2),
+                            checkmarkColor: kPrimaryColor,
+                            labelStyle: GoogleFonts.inter(
+                              color: _domainesPrioritaires[domaine]! ? kPrimaryColor : kDarkColor,
+                              fontSize: 14,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Section 3 : Formulaire de candidature
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  margin: const EdgeInsets.only(bottom: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.description, size: 32, color: kPrimaryColor),
+                          const SizedBox(width: 16),
+                          Text(
+                            '3. Formulaire de candidature',
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      // Sous-section 3.1 : Informations personnelles
+                      Text(
+                        '3.1. Informations personnelles',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Prénom et Nom
+                      Text(
+                        'Prénom et Nom *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _nomController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Votre nom complet',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                          prefixIcon: Icon(Icons.person, color: kPrimaryColor),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Numéro de téléphone et Email en deux colonnes pour desktop
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (constraints.maxWidth > 600) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Numéro de téléphone *',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: kDarkColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _phoneController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          hintText: 'Ex: +243 999 867 334',
+                                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                                          prefixIcon: Icon(Icons.phone, color: kPrimaryColor),
+                                        ),
+                                        keyboardType: TextInputType.phone,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Ce champ est obligatoire';
+                                          }
+                                          if (value.length < 9) {
+                                            return 'Numéro de téléphone invalide';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Adresse e-mail *',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: kDarkColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _emailController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          hintText: 'votre.email@example.com',
+                                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                                          prefixIcon: Icon(Icons.email, color: kPrimaryColor),
+                                        ),
+                                        keyboardType: TextInputType.emailAddress,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Ce champ est obligatoire';
+                                          }
+                                          if (!value.contains('@')) {
+                                            return 'Email invalide';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Numéro de téléphone *',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _phoneController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    hintText: 'Ex: +243 999 867 334',
+                                    hintStyle: GoogleFonts.inter(color: kTextLight),
+                                    prefixIcon: Icon(Icons.phone, color: kPrimaryColor),
+                                  ),
+                                  keyboardType: TextInputType.phone,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Ce champ est obligatoire';
+                                    }
+                                    if (value.length < 9) {
+                                      return 'Numéro de téléphone invalide';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  'Adresse e-mail *',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _emailController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    hintText: 'votre.email@example.com',
+                                    hintStyle: GoogleFonts.inter(color: kTextLight),
+                                    prefixIcon: Icon(Icons.email, color: kPrimaryColor),
+                                  ),
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Ce champ est obligatoire';
+                                    }
+                                    if (!value.contains('@')) {
+                                      return 'Email invalide';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Commune / quartier de résidence
+                      Text(
+                        'Commune / quartier de résidence *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _communeController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Ex: Lemba, Quartier Ruttens',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                          prefixIcon: Icon(Icons.location_on, color: kPrimaryColor),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // CV (à téléverser)
+                      Text(
+                        'CV *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300, width: 1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_cvFileName != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.attach_file, color: kPrimaryColor, size: 20),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _cvFileName!,
+                                        style: GoogleFonts.inter(
+                                          color: kDarkColor,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                      onPressed: () {
+                                        setState(() {
+                                          _cvFileName = null;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ElevatedButton.icon(
+                              onPressed: () => _simulerTeleversement('cv'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kPrimaryColor.withOpacity(0.1),
+                                foregroundColor: kPrimaryColor,
+                                elevation: 0,
+                              ),
+                              icon: const Icon(Icons.upload_file),
+                              label: Text(_cvFileName == null ? 'Téléverser votre CV (PDF, moins de 2 Go)' : 'Remplacer le CV'),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Format PDF, taille maximale : 2 Go',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: kTextLight,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Carte d'identité
+                      Text(
+                        'Carte d\'identité *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300, width: 1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_cniFileName != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.attach_file, color: kPrimaryColor, size: 20),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _cniFileName!,
+                                        style: GoogleFonts.inter(
+                                          color: kDarkColor,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                      onPressed: () {
+                                        setState(() {
+                                          _cniFileName = null;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ElevatedButton.icon(
+                              onPressed: () => _simulerTeleversement('cni'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kPrimaryColor.withOpacity(0.1),
+                                foregroundColor: kPrimaryColor,
+                                elevation: 0,
+                              ),
+                              icon: const Icon(Icons.upload_file),
+                              label: Text(_cniFileName == null ? 'Téléverser votre carte d\'identité (PDF, moins de 2 Go)' : 'Remplacer la carte d\'identité'),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Format PDF, taille maximale : 2 Go',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: kTextLight,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Sous-section 3.2 : Profil académique / professionnel
+                      Text(
+                        '3.2. Profil académique / professionnel',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Niveau d'études ou qualification
+                      Text(
+                        'Niveau d\'études ou qualification *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _niveauEtudesController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Ex: Licence en Mathématiques, Master en Physique, etc.',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                          prefixIcon: Icon(Icons.school, color: kPrimaryColor),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Domaine de compétence (liste déroulante)
+                      Text(
+                        'Domaine de compétence *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: _domaineCompetence,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Sélectionnez votre domaine de compétence',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                        ),
+                        items: _domainesCompetences.map((String domaine) {
+                          return DropdownMenuItem<String>(
+                            value: domaine,
+                            child: Text(domaine),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _domaineCompetence = newValue;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Sous-section 3.3 : Expérience
+                      Text(
+                        '3.3. Expérience',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Expérience en enseignement ou encadrement (Oui / Non)
+                      Text(
+                        'Expérience en enseignement ou encadrement *',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          ChoiceChip(
+                            label: const Text('Oui'),
+                            selected: _hasExperience == true,
+                            onSelected: (selected) {
+                              setState(() {
+                                _hasExperience = selected ? true : null;
+                              });
+                            },
+                            selectedColor: kSecondaryColor.withOpacity(0.3),
+                            backgroundColor: Colors.grey.shade200,
+                            labelStyle: GoogleFonts.inter(
+                              color: _hasExperience == true ? kSecondaryColor : kDarkColor,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          ChoiceChip(
+                            label: const Text('Non'),
+                            selected: _hasExperience == false,
+                            onSelected: (selected) {
+                              setState(() {
+                                _hasExperience = selected ? false : null;
+                              });
+                            },
+                            selectedColor: kPrimaryColor.withOpacity(0.3),
+                            backgroundColor: Colors.grey.shade200,
+                            labelStyle: GoogleFonts.inter(
+                              color: _hasExperience == false ? kPrimaryColor : kDarkColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Brève description de l'expérience (champ court)
+                      if (_hasExperience == true) ...[
+                        Text(
+                          'Brève description de l\'expérience',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: kDarkColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _experienceController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            hintText: 'Décrivez brièvement votre expérience (max 200 caractères)',
+                            hintStyle: GoogleFonts.inter(color: kTextLight),
+                            prefixIcon: Icon(Icons.work_history, color: kPrimaryColor),
+                          ),
+                          maxLines: 3,
+                          maxLength: 200,
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ],
+                  ),
+                ),
+                
+                // Note informative
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: kPrimaryColor, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'N.B : Après avoir complété toutes ces informations, appuyez sur le bouton "Soumettre la candidature" pour que nous puissions recevoir directement la demande dans notre boîte mail.',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: kDarkColor,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Bouton de soumission
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kSecondaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      textStyle: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: const Text('SOUMETTRE LA CANDIDATURE'),
+                  ),
+                ),
+                
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -499,7 +1987,6 @@ class _PageContentState extends State<_PageContent> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Wrapper avec Scrollbar personnalisée
         Positioned.fill(
           child: Scrollbar(
             controller: _scrollController,
@@ -663,53 +2150,17 @@ void _showNavSheet(BuildContext context) {
                 },
               ),
               _SheetItem(
-                'Trouver un précepteur',
+                'Nos précepteurs',
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  // Ouvrir le modal pour trouver un précepteur
-                  showDialog(
-                    context: ctx,
-                    builder: (context) => _TutorModal(
-                      title: 'Trouver un précepteur',
-                      description: 'Remplissez ce formulaire pour trouver le précepteur idéal pour votre enfant.',
-                      submitText: 'Rechercher',
-                      onSubmit: () {
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Recherche de précepteur lancée !'),
-                            backgroundColor: kSecondaryColor,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    ),
-                  );
+                  Navigator.pushNamed(ctx, '/nos-precepteurs');
                 },
               ),
               _SheetItem(
                 'Devenir précepteur',
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  // Ouvrir le modal pour devenir précepteur
-                  showDialog(
-                    context: ctx,
-                    builder: (context) => _TutorModal(
-                      title: 'Devenir précepteur',
-                      description: 'Rejoignez notre plateforme et aidez les élèves à réussir.',
-                      submitText: 'Postuler',
-                      onSubmit: () {
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Candidature envoyée avec succès !'),
-                            backgroundColor: kSecondaryColor,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    ),
-                  );
+                  Navigator.pushNamed(ctx, '/devenir-precepteur');
                 },
               ),
               const SizedBox(height: 24),
@@ -840,7 +2291,6 @@ class _HeroSectionState extends State<_HeroSection> {
       height: size.height * 0.8,
       child: Stack(
         children: [
-          // VIDÉO DE FOND - Version agrandie à 120%
           Positioned.fill(
             child: FutureBuilder(
               future: _initializeVideoPlayerFuture,
@@ -848,12 +2298,11 @@ class _HeroSectionState extends State<_HeroSection> {
                 if (snapshot.connectionState == ConnectionState.done) {
                   return Stack(
                     children: [
-                      // Conteneur pour la vidéo avec 120% de largeur
                       Positioned.fill(
                         child: Align(
                           alignment: Alignment.center,
                           child: SizedBox(
-                            width: size.width * 1.2, // 120% de la largeur
+                            width: size.width * 1.2,
                             child: AspectRatio(
                               aspectRatio: _videoController.value.aspectRatio,
                               child: VideoPlayer(_videoController),
@@ -861,7 +2310,6 @@ class _HeroSectionState extends State<_HeroSection> {
                           ),
                         ),
                       ),
-                      // Overlay d'opacité qui couvre toute la vidéo
                       Positioned.fill(
                         child: Container(
                           color: Colors.black.withOpacity(0.4),
@@ -876,7 +2324,6 @@ class _HeroSectionState extends State<_HeroSection> {
             ),
           ),
           
-          // DÉGRADÉ SUPPLÉMENTAIRE POUR L'EFFET VISUEL
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -892,7 +2339,6 @@ class _HeroSectionState extends State<_HeroSection> {
             ),
           ),
           
-          // CONTENU TEXTUEL
           Align(
             alignment: Alignment.centerLeft,
             child: Container(
@@ -900,7 +2346,7 @@ class _HeroSectionState extends State<_HeroSection> {
                 horizontal: isSmall ? 24 : 48,
                 vertical: isSmall ? 40 : 80,
               ),
-              width: size.width * 0.6, // Limite la largeur du contenu textuel
+              width: size.width * 0.6,
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: isSmall ? 700 : 900),
                 child: Column(
@@ -936,7 +2382,6 @@ class _HeroSectionState extends State<_HeroSection> {
                         height: 1.6,
                       ),
                     ),
-                    // LES BOUTONS ONT ÉTÉ RETIRÉS ICI
                   ],
                 ),
               ),
@@ -1107,91 +2552,105 @@ class _FeatureList extends StatelessWidget {
   }
 }
 
-// ====== SECTION SERVICES ======
-class _ServicesSection extends StatefulWidget {
-  const _ServicesSection();
+// ====== CARTE DE SERVICE POUR PAGE D'ACCUEIL ======
+class _HomeServiceCard extends StatelessWidget {
+  final String title;
+  final String description;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _HomeServiceCard({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
-  State<_ServicesSection> createState() => _ServicesSectionState();
+  Widget build(BuildContext context) {
+    return Container(
+      height: 320,
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: kPrimaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 32,
+                      color: kPrimaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: kDarkColor,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    description,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: kTextLight,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextButton(
+                    onPressed: onTap,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      foregroundColor: kSecondaryColor,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'En savoir plus',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.arrow_forward, size: 16),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _ServicesSectionState extends State<_ServicesSection> {
-  final List<_ServiceItem> _services = const [
-    _ServiceItem(
-      'Services pour les parents',
-      'Trouvez des précepteurs qualifiés pour accompagner vos enfants, suivre leur progression et renforcer leur réussite scolaire.',
-      Icons.family_restroom,
-      details: '''
-• Recherche de précepteurs selon vos critères
-• Évaluation des compétences et expériences
-• Mise en relation sécurisée
-• Suivi régulier des progrès
-• Facturation transparente
-      ''',
-    ),
-    _ServiceItem(
-      'Services pour les précepteurs',
-      'Valorisez vos compétences, trouvez des élèves et gérez vos cours grâce à une plateforme éducative structurée et fiable.',
-      Icons.school,
-      details: '''
-• Création de profil détaillé
-• Mise en relation avec des élèves
-• Gestion de votre emploi du temps
-• Outils pédagogiques fournis
-• Paiements sécurisés
-      ''',
-    ),
-    _ServiceItem(
-      'Accompagnement scolaire',
-      'Soutien scolaire personnalisé pour le primaire et le secondaire, avec un suivi adapté au niveau et aux objectifs de l\'élève.',
-      Icons.auto_stories,
-      details: '''
-• Évaluation initiale du niveau
-• Programme personnalisé
-• Cours particuliers à domicile
-• Exercices et devoirs adaptés
-• Bilans réguliers
-      ''',
-    ),
-    _ServiceItem(
-      'Orientation académique',
-      'Aide à l\'orientation scolaire et académique pour guider les élèves vers des choix adaptés à leurs capacités et ambitions.',
-      Icons.trending_up,
-      details: '''
-• Tests d\'orientation
-• Analyse des compétences
-• Information sur les filières
-• Accompagnement aux choix
-• Préparation aux examens
-      ''',
-    ),
-    _ServiceItem(
-      'Suivi et performance',
-      'Suivez l\'évolution scolaire des élèves grâce à des indicateurs clairs, des rapports simples et une communication transparente.',
-      Icons.analytics,
-      details: '''
-• Tableaux de bord personnalisés
-• Rapports de progression
-• Communication avec les parents
-• Alertes en cas de difficultés
-• Recommandations d\'amélioration
-      ''',
-    ),
-    _ServiceItem(
-      'Plateforme éducative',
-      'Une plateforme simple et sécurisée pour organiser les cours, connecter parents et précepteurs, et structurer l\'accompagnement.',
-      Icons.computer,
-      details: '''
-• Interface intuitive
-• Messagerie sécurisée
-• Planning interactif
-• Documents partagés
-• Support technique
-      ''',
-    ),
-  ];
-
-  int? _expandedIndex;
+// ====== SECTION SERVICES (Page d'accueil) ======
+class _ServicesSection extends StatelessWidget {
+  const _ServicesSection();
 
   @override
   Widget build(BuildContext context) {
@@ -1211,7 +2670,7 @@ class _ServicesSectionState extends State<_ServicesSection> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Des solutions éducatives adaptées',
+            'Solutions éducatives complètes',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 36,
@@ -1222,7 +2681,7 @@ class _ServicesSectionState extends State<_ServicesSection> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Découvrez nos services complets pour répondre à tous vos besoins éducatifs',
+            'Découvrez notre gamme de services conçus pour accompagner la réussite scolaire',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 18,
@@ -1231,10 +2690,10 @@ class _ServicesSectionState extends State<_ServicesSection> {
             ),
           ),
           const SizedBox(height: 48),
+          
           LayoutBuilder(builder: (context, constraints) {
             final isWide = constraints.maxWidth > 900;
-            final isMedium = constraints.maxWidth > 600;
-            final crossCount = isWide ? 3 : (isMedium ? 2 : 1);
+            final crossCount = isWide ? 3 : 2;
             
             return GridView.builder(
               shrinkWrap: true,
@@ -1243,29 +2702,47 @@ class _ServicesSectionState extends State<_ServicesSection> {
                 crossAxisCount: crossCount,
                 crossAxisSpacing: 24,
                 mainAxisSpacing: 24,
-                childAspectRatio: _expandedIndex != null ? 1.3 : 1.1,
+                childAspectRatio: 0.9,
               ),
-              itemCount: _services.length,
-              itemBuilder: (_, index) => _ServiceCard(
-                service: _services[index],
-                isExpanded: _expandedIndex == index,
-                onTap: () {
-                  setState(() {
-                    if (_expandedIndex == index) {
-                      _expandedIndex = null;
-                    } else {
-                      _expandedIndex = index;
-                    }
-                  });
-                },
-              ),
+              itemCount: 3,
+              itemBuilder: (_, index) {
+                final services = [
+                  {
+                    'title': 'Pour les parents',
+                    'description': 'Trouvez des précepteurs qualifiés pour accompagner vos enfants',
+                    'icon': Icons.family_restroom,
+                  },
+                  {
+                    'title': 'Pour les précepteurs',
+                    'description': 'Valorisez vos compétences et trouvez des élèves',
+                    'icon': Icons.school,
+                  },
+                  {
+                    'title': 'Accompagnement scolaire',
+                    'description': 'Soutien personnalisé pour la réussite des élèves',
+                    'icon': Icons.auto_stories,
+                  },
+                ];
+                
+                final service = services[index];
+                
+                return _HomeServiceCard(
+                  title: service['title'] as String,
+                  description: service['description'] as String,
+                  icon: service['icon'] as IconData,
+                  onTap: () {
+                    Navigator.pushNamed(context, '/services');
+                  },
+                );
+              },
             );
           }),
+          
           const SizedBox(height: 48),
+          
           _CtaButton(
-            label: 'Découvrir tous les services',
+            label: 'Découvrir tous nos services',
             onPressed: () {
-              // Action pour découvrir tous les services
               Navigator.pushNamed(context, '/services');
             },
           ),
@@ -1283,6 +2760,7 @@ class _ServiceItem {
   const _ServiceItem(this.title, this.description, this.icon, {this.details = ''});
 }
 
+// ====== CARTE DE SERVICE CORRIGÉE (pour page services) ======
 class _ServiceCard extends StatelessWidget {
   final _ServiceItem service;
   final bool isExpanded;
@@ -1303,6 +2781,7 @@ class _ServiceCard extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
+          height: isExpanded ? 500 : 300,
           child: Card(
             elevation: isExpanded ? 4 : 0,
             shape: RoundedRectangleBorder(
@@ -1324,148 +2803,158 @@ class _ServiceCard extends StatelessWidget {
                   ),
                 ],
               ),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(service.icon, size: 32, color: kPrimaryColor),
-                      ),
-                      Icon(
-                        isExpanded ? Icons.expand_less : Icons.expand_more,
-                        color: kPrimaryColor,
-                        size: 24,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    service.title,
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: kDarkColor,
-                      height: 1.3,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: Text(
-                      service.description,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        color: kTextLight,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                  if (isExpanded) ...[
-                    const SizedBox(height: 20),
-                    Container(
-                      width: double.infinity,
-                      height: 1,
-                      color: Colors.grey.shade200,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Détails du service :',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: kDarkColor,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      service.details,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: kTextLight,
-                        height: 1.6,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              // Action pour en savoir plus
-                              Navigator.pushNamed(context, '/services');
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              side: BorderSide(color: kPrimaryColor),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              'En savoir plus',
-                              style: GoogleFonts.inter(
-                                color: kPrimaryColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Action pour contacter
-                              Navigator.pushNamed(context, '/contact');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: kSecondaryColor,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              'Nous contacter',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ] else ...[
-                    const SizedBox(height: 20),
-                    TextButton(
-                      onPressed: onTap,
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        foregroundColor: kSecondaryColor,
-                      ),
-                      child: Row(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(service.icon, size: 32, color: kPrimaryColor),
+                              ),
+                              Icon(
+                                isExpanded ? Icons.expand_less : Icons.expand_more,
+                                color: kPrimaryColor,
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
                           Text(
-                            'Développer',
+                            service.title,
                             style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                              height: 1.3,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, size: 16),
+                          const SizedBox(height: 12),
+                          Text(
+                            service.description,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              color: kTextLight,
+                              height: 1.5,
+                            ),
+                          ),
                         ],
                       ),
                     ),
+                    
+                    if (isExpanded) ...[
+                      Divider(height: 1, color: Colors.grey.shade200),
+                      Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Détails du service :',
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: kDarkColor,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              service.details,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: kTextLight,
+                                height: 1.6,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, '/contact');
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      side: BorderSide(color: kPrimaryColor),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'En savoir plus',
+                                      style: GoogleFonts.inter(
+                                        color: kPrimaryColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, '/contact');
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: kSecondaryColor,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Nous contacter',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 24, right: 24, bottom: 20),
+                        child: TextButton(
+                          onPressed: onTap,
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            foregroundColor: kSecondaryColor,
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                'Développer',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(Icons.arrow_forward, size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -1546,7 +3035,6 @@ class _WhySection extends StatelessWidget {
                     _CtaButton(
                       label: 'Découvrir les services',
                       onPressed: () {
-                        // Navigation vers les services
                         Navigator.pushNamed(context, '/services');
                       },
                     ),
@@ -1696,7 +3184,6 @@ class _TeamCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Récupérer les initiales du nom
     final initials = member.name
         .split(' ')
         .where((part) => part.isNotEmpty)
@@ -1725,7 +3212,6 @@ class _TeamCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // SECTION AVATAR - Version avec image
             Expanded(
               flex: 3,
               child: Container(
@@ -1761,7 +3247,6 @@ class _TeamCard extends StatelessWidget {
                 ),
               ),
             ),
-            // SECTION INFOS
             Expanded(
               flex: 2,
               child: Padding(
@@ -2046,25 +3531,7 @@ class _CtaSection extends StatelessWidget {
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: () {
-                    // Ouvrir le modal pour trouver un précepteur
-                    showDialog(
-                      context: context,
-                      builder: (context) => _TutorModal(
-                        title: 'Trouver un précepteur',
-                        description: 'Remplissez ce formulaire pour trouver le précepteur idéal pour votre enfant.',
-                        submitText: 'Rechercher',
-                        onSubmit: () {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Recherche de précepteur lancée !'),
-                              backgroundColor: kSecondaryColor,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                      ),
-                    );
+                    Navigator.pushNamed(context, '/nos-precepteurs');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -2176,6 +3643,14 @@ class _FooterSection extends StatelessWidget {
                       'Contact',
                       onTap: () => Navigator.pushNamed(context, '/contact'),
                     ),
+                    _FooterLink(
+                      'Nos précepteurs',
+                      onTap: () => Navigator.pushNamed(context, '/nos-precepteurs'),
+                    ),
+                    _FooterLink(
+                      'Devenir précepteur',
+                      onTap: () => Navigator.pushNamed(context, '/devenir-precepteur'),
+                    ),
                   ],
                 ),
               ),
@@ -2238,9 +3713,8 @@ class _FooterSection extends StatelessWidget {
                     const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () {
-                        // Action pour s'abonner à la newsletter
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('Inscription à la newsletter réussie !'),
                             backgroundColor: kSecondaryColor,
                             duration: Duration(seconds: 2),
@@ -2279,9 +3753,8 @@ class _FooterSection extends StatelessWidget {
                 children: [
                   TextButton(
                     onPressed: () {
-                      // Action pour les conditions d'utilisation
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Ouverture des conditions d\'utilisation'),
                           backgroundColor: kPrimaryColor,
                           duration: Duration(seconds: 2),
@@ -2299,9 +3772,8 @@ class _FooterSection extends StatelessWidget {
                   const SizedBox(width: 24),
                   TextButton(
                     onPressed: () {
-                      // Action pour la politique de confidentialité
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Ouverture de la politique de confidentialité'),
                           backgroundColor: kPrimaryColor,
                           duration: Duration(seconds: 2),
@@ -2416,9 +3888,8 @@ class _SocialIcon extends StatelessWidget {
       icon: Icon(icon, size: 24),
       color: Colors.white.withOpacity(0.8),
       onPressed: () {
-        // Action pour les réseaux sociaux
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Ouverture du réseau social'),
             backgroundColor: kAccentColor,
             duration: Duration(seconds: 2),
@@ -2429,11 +3900,91 @@ class _SocialIcon extends StatelessWidget {
   }
 }
 
-// ====== NOUVELLES PAGES ======
-
 // ====== PAGE SERVICES ======
-class ServicesPage extends StatelessWidget {
+class ServicesPage extends StatefulWidget {
   const ServicesPage({super.key});
+
+  @override
+  State<ServicesPage> createState() => _ServicesPageState();
+}
+
+class _ServicesPageState extends State<ServicesPage> {
+  final List<_ServiceItem> _services = const [
+    _ServiceItem(
+      'Services pour les parents',
+      'Trouvez des précepteurs qualifiés pour accompagner vos enfants, suivre leur progression et renforcer leur réussite scolaire.',
+      Icons.family_restroom,
+      details: '''
+• Recherche de précepteurs selon vos critères
+• Évaluation des compétences et expériences
+• Mise en relation sécurisée
+• Suivi régulier des progrès
+• Facturation transparente
+      ''',
+    ),
+    _ServiceItem(
+      'Services pour les précepteurs',
+      'Valorisez vos compétences, trouvez des élèves et gérez vos cours grâce à une plateforme éducative structurée et fiable.',
+      Icons.school,
+      details: '''
+• Création de profil détaillé
+• Mise en relation avec des élèves
+• Gestion de votre emploi du temps
+• Outils pédagogiques fournis
+• Paiements sécurisés
+      ''',
+    ),
+    _ServiceItem(
+      'Accompagnement scolaire',
+      'Soutien scolaire personnalisé pour le primaire et le secondaire, avec un suivi adapté au niveau et aux objectifs de l\'élève.',
+      Icons.auto_stories,
+      details: '''
+• Évaluation initiale du niveau
+• Programme personnalisé
+• Cours particuliers à domicile
+• Exercices et devoirs adaptés
+• Bilans réguliers
+      ''',
+    ),
+    _ServiceItem(
+      'Orientation académique',
+      'Aide à l\'orientation scolaire et académique pour guider les élèves vers des choix adaptés à leurs capacités et ambitions.',
+      Icons.trending_up,
+      details: '''
+• Tests d\'orientation
+• Analyse des compétences
+• Information sur les filières
+• Accompagnement aux choix
+• Préparation aux examens
+      ''',
+    ),
+    _ServiceItem(
+      'Suivi et performance',
+      'Suivez l\'évolution scolaire des élèves grâce à des indicateurs clairs, des rapports simples et une communication transparente.',
+      Icons.analytics,
+      details: '''
+• Tableaux de bord personnalisés
+• Rapports de progression
+• Communication avec les parents
+• Alertes en cas de difficultés
+• Recommandations d\'amélioration
+      ''',
+    ),
+    _ServiceItem(
+      'Plateforme éducative',
+      'Une plateforme simple et sécurisée pour organiser les cours, connecter parents et précepteurs, et structurer l\'accompagnement.',
+      Icons.computer,
+      details: '''
+• Interface intuitive
+• Messagerie sécurisée
+• Planning interactif
+• Documents partagés
+• Support technique
+      ''',
+    ),
+  ];
+
+  int? _expandedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -2447,67 +3998,501 @@ class ServicesPage extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+        child: _SectionBase(
+          background: kLightColor,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Nos Services',
+                'NOS SERVICES',
+                style: GoogleFonts.inter(
+                  color: kPrimaryColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Des solutions éducatives complètes',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 36,
                   fontWeight: FontWeight.w800,
                   color: kDarkColor,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               Text(
-                'Découvrez nos services complets d\'accompagnement scolaire',
+                'Découvrez notre gamme complète de services conçus pour répondre à tous les besoins éducatifs des parents, des élèves et des précepteurs.',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 18,
                   color: kTextLight,
+                  height: 1.6,
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
+              
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: kPrimaryColor.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(color: kPrimaryColor.withOpacity(0.2), width: 1),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(Icons.groups, size: 32, color: kPrimaryColor),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Le Préceptorat',
+                          style: GoogleFonts.inter(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: kDarkColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
                     Text(
-                      'Services détaillés',
+                      'Le préceptorat est le pilier principal de SOMA. Contrairement aux formations de masse, il repose sur un suivi personnalisé, adapté au niveau, au rythme et aux objectifs de chaque apprenant. Les séances se déroulent principalement en présentiel, afin de favoriser l\'interaction directe, la compréhension approfondie et un encadrement rigoureux.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Grâce à cette approche, SOMA permet :',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: kDarkColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const _FeatureList(
+                      features: [
+                        'Une meilleure compréhension des notions étudiées',
+                        'Un accompagnement sur mesure, ciblé sur les difficultés réelles',
+                        'Un suivi régulier et motivant',
+                        'Des résultats mesurables et durables',
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: kSecondaryColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: kSecondaryColor.withOpacity(0.2), width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: kSecondaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(Icons.computer, size: 32, color: kSecondaryColor),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Formations Professionnelles',
+                          style: GoogleFonts.inter(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: kDarkColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'En plus du préceptorat, SOMA propose un ensemble de formations professionnelles dans le domaine de :',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _FormationItem(
+                            title: 'Conception Assistée par Ordinateur',
+                            software: 'AutoCAD & SOLIDWORKS',
+                            description: 'Formation complète en CAO pour la modélisation 2D et 3D',
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        Expanded(
+                          child: _FormationItem(
+                            title: 'Système d\'Information Géographique',
+                            software: 'ArcGIS',
+                            description: 'Formation en SIG pour l\'analyse et la cartographie spatiale',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Ces formations sont conçues pour répondre aux besoins du marché professionnel et sont dispensées par des formateurs certifiés avec une approche pratique et orientée résultats.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextLight,
+                        fontStyle: FontStyle.italic,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: kPrimaryColor.withOpacity(0.1)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.important_devices, size: 48, color: kPrimaryColor),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Une approche intégrée',
                       style: GoogleFonts.inter(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: kDarkColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'SOMA propose une gamme complète de services éducatifs pour répondre aux besoins des parents et des précepteurs.',
+                    const SizedBox(height: 12),
+                    Text(
+                      'SOMA propose une approche complète qui combine mise en relation, suivi pédagogique, outils numériques et accompagnement personnalisé pour garantir la réussite scolaire.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextLight,
+                        height: 1.6,
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    // Vous pouvez réutiliser le contenu de _ServicesSection ici
-                    // ou ajouter du contenu spécifique
+                  ],
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              LayoutBuilder(builder: (context, constraints) {
+                final isWide = constraints.maxWidth > 900;
+                final isMedium = constraints.maxWidth > 600;
+                final crossCount = isWide ? 3 : (isMedium ? 2 : 1);
+                
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossCount,
+                    crossAxisSpacing: 24,
+                    mainAxisSpacing: 24,
+                    childAspectRatio: 0.9,
+                  ),
+                  itemCount: _services.length,
+                  itemBuilder: (_, index) => _ServiceCard(
+                    service: _services[index],
+                    isExpanded: _expandedIndex == index,
+                    onTap: () {
+                      setState(() {
+                        if (_expandedIndex == index) {
+                          _expandedIndex = null;
+                        } else {
+                          _expandedIndex = index;
+                        }
+                      });
+                    },
+                  ),
+                );
+              }),
+              
+              const SizedBox(height: 48),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [kPrimaryColor.withOpacity(0.1), kSecondaryColor.withOpacity(0.1)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pourquoi choisir nos services ?',
+                            style: GoogleFonts.inter(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const _FeatureList(
+                            features: [
+                              'Précepteurs certifiés et évalués',
+                              'Suivi personnalisé de la progression',
+                              'Outils pédagogiques modernes',
+                              'Support dédié 7j/7',
+                              'Tarification transparente',
+                              'Flexibilité des horaires',
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 32),
+                    Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: kDarkColor.withOpacity(0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.verified_user,
+                          size: 80,
+                          color: kSecondaryColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 48),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Prêt à commencer ?',
+                            style: GoogleFonts.inter(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Que vous soyez parent à la recherche d\'un précepteur ou précepteur souhaitant rejoindre notre plateforme, nous sommes là pour vous accompagner.',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              color: Colors.white.withOpacity(0.9),
+                              height: 1.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 32),
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/nos-precepteurs');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: kPrimaryColor,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'Trouver un précepteur',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/devenir-precepteur');
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.white),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'Devenir précepteur',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ====== WIDGET POUR LES FORMATIONS ======
+class _FormationItem extends StatelessWidget {
+  final String title;
+  final String software;
+  final String description;
+
+  const _FormationItem({
+    required this.title,
+    required this.software,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.engineering, color: kSecondaryColor),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: kDarkColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: kSecondaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              software,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: kSecondaryColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            description,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: kTextLight,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/contact');
+            },
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              foregroundColor: kPrimaryColor,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Demander plus d\'informations',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.arrow_forward, size: 16),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2593,7 +4578,7 @@ class BlogPage extends StatelessWidget {
   }
 }
 
-// ====== PAGE À PROPOS ======
+// ====== PAGE À PROPOS (MISE À JOUR COMPLÈTE) ======
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
@@ -2610,23 +4595,36 @@ class AboutPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'À propos de SOMA',
+                'À PROPOS DE SOMA',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: kPrimaryColor,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Notre Histoire & Notre Vision',
                 style: GoogleFonts.inter(
                   fontSize: 36,
                   fontWeight: FontWeight.w800,
                   color: kDarkColor,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               const Divider(),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
+              
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -2641,21 +4639,393 @@ class AboutPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline, size: 32, color: kPrimaryColor),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Naissance d\'une conviction',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: kDarkColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
                     Text(
-                      'Notre histoire',
+                      'SOMA est née d\'une conviction simple mais puissante : la réussite n\'est jamais le fruit du hasard, elle est le résultat d\'un accompagnement juste, humain et exigeant. SOMA voit le jour dans un contexte où l\'enseignement de masse laisse trop souvent les apprenants livrés à eux-mêmes.',
                       style: GoogleFonts.inter(
-                        fontSize: 24,
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Classes surchargées, formations impersonnelles, manque de suivi réel : autant de freins qui empêchent de nombreux talents d\'exprimer pleinement leur potentiel. SOMA est née pour répondre à ce manque.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.location_on, size: 32, color: kPrimaryColor),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Notre implantation',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: kDarkColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Implantée au 067, avenue des Écuries, quartier Ruttens, commune de Lemba, SOMA s\'inscrit comme un espace de proximité, accessible et profondément ancré dans son environnement.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Un lieu pensé pour apprendre, progresser et construire l\'avenir dans un cadre sérieux, structuré et propice à la concentration.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: kPrimaryColor.withOpacity(0.2), width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.groups, size: 32, color: kPrimaryColor),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Le Préceptorat : Notre choix fort',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: kDarkColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Dès ses débuts, SOMA fait un choix fort et assumé : placer le préceptorat au cœur de son identité. Un accompagnement individualisé, rigoureux et profondément humain. Ici, chaque apprenant compte. Chaque parcours est unique. Chaque objectif est pris au sérieux.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Le préceptorat SOMA se déroule principalement en présentiel, car rien ne remplace la richesse du contact direct, l\'échange immédiat, la compréhension fine des besoins et des difficultés.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Lorsque les circonstances l\'exigent, certaines séances sont proposées en ligne, sans jamais compromettre la qualité du suivi ni l\'exigence pédagogique qui font la réputation de SOMA.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: kSecondaryColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: kSecondaryColor.withOpacity(0.2), width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cette approche permet une transformation réelle :',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: kDarkColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'SOMA est une plateforme éducative innovante qui connecte les parents avec des précepteurs qualifiés pour un accompagnement scolaire fiable, structuré et orienté vers la réussite des élèves.',
+                    const SizedBox(height: 24),
+                    const _FeatureList(
+                      features: [
+                        'Une meilleure compréhension des notions étudiées',
+                        'Un accompagnement sur mesure, ciblé sur les difficultés réelles',
+                        'Un suivi régulier et motivant',
+                        'Des résultats mesurables et durables',
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Fondée en République Démocratique du Congo, SOMA répond au besoin crucial d\'un accompagnement scolaire de qualité et accessible.',
+                  ],
+                ),
+              ),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.engineering, size: 32, color: kSecondaryColor),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Au-delà du préceptorat',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: kDarkColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Mais SOMA va plus loin. Consciente que la réussite passe aussi par des compétences professionnelles solides et adaptées aux réalités du monde actuel, SOMA développe des formations professionnelles spécialisées.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Elle accompagne apprenants et professionnels dans des domaines stratégiques tels que la Conception Assistée par Ordinateur avec AutoCAD et SOLIDWORKS, ainsi que le Système d\'Information Géographique avec ArcGIS.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Des formations pratiques, exigeantes et orientées vers l\'employabilité et la performance.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Notre Identité',
+                      style: GoogleFonts.inter(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'SOMA n\'est pas simplement un centre de formation. C\'est un partenaire de réussite, un espace où l\'on apprend à apprendre, où l\'on reprend confiance, où l\'on construit des compétences solides et durables.',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        color: Colors.white.withOpacity(0.95),
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Une structure qui allie discipline, excellence et accompagnement humain.',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        color: Colors.white.withOpacity(0.95),
+                        fontStyle: FontStyle.italic,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.visibility, size: 32, color: kAccentColor),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Notre Vision à Long Terme',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: kDarkColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Aujourd\'hui, SOMA s\'inscrit dans une vision à long terme : former des esprits compétents, autonomes et confiants, capables de relever les défis académiques et professionnels de leur génération.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Une vision portée par l\'exigence, la proximité et la foi profonde dans le potentiel humain.',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextDark,
+                        fontWeight: FontWeight.w600,
+                        fontStyle: FontStyle.italic,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 48),
+              
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: kSecondaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Prêt à nous rejoindre ?',
+                            style: GoogleFonts.inter(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Que vous soyez parent, élève ou professionnel, SOMA est là pour vous accompagner vers la réussite.',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              color: kTextLight,
+                              height: 1.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 32),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/contact');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Nous contacter',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -2743,7 +5113,7 @@ class ContactPage extends StatelessWidget {
                     ),
                     const _ContactInfo(
                       icon: Icons.location_on,
-                      text: 'Kinshasa, République Démocratique du Congo',
+                      text: '067, avenue des Écuries, quartier Ruttens, commune de Lemba, Kinshasa, RDC',
                     ),
                   ],
                 ),

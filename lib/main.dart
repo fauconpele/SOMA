@@ -992,7 +992,7 @@ Ce message a été envoyé via l'application SOMA.
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    child: const Text('ENVOYER LA DEMANDE PAR EMAIL'),
+                    child: const Text('SOUMETTRE LA DEMANDE'),
                   ),
                 ),
                 
@@ -2089,7 +2089,7 @@ NOTE: Les fichiers sont à envoyer séparément par email ou à remettre en main
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    child: const Text('ENVOYER LA CANDIDATURE PAR EMAIL'),
+                    child: const Text('SOUMETTRE LA CANDIDATURE'),
                   ),
                 ),
                 
@@ -5574,58 +5574,732 @@ class BlogPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Blog Éducatif',
+                'BLOG ÉDUCATIF SOMA',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: kPrimaryColor,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Conseils et ressources pour la réussite scolaire',
                 style: GoogleFonts.inter(
                   fontSize: 36,
                   fontWeight: FontWeight.w800,
                   color: kDarkColor,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               const Divider(),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
+              
               Text(
-                'Articles et conseils pour la réussite scolaire',
+                'Découvrez nos articles récents',
                 style: GoogleFonts.inter(
-                  fontSize: 18,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: kTextDark,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Conseils pratiques, méthodes d\'apprentissage et astuces pour les parents et les élèves',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
                   color: kTextLight,
                 ),
               ),
               const SizedBox(height: 40),
+              
+              // Article 1
+              _BlogPostCard(
+                title: 'Comment choisir le bon précepteur pour son enfant',
+                excerpt: 'Guide complet pour évaluer les compétences pédagogiques et trouver l\'accompagnement idéal selon le profil de votre enfant.',
+                date: '15 Mars 2024',
+                readTime: '5 min',
+                category: 'Conseils Parents',
+                imageAsset: 'assets/images/blog/precepteur.jpg',
+                onTap: () => _showBlogDetail(
+                  context,
+                  title: 'Comment choisir le bon précepteur pour son enfant',
+                  content: '''
+Choisir le bon précepteur est crucial pour la réussite scolaire de votre enfant. Voici nos conseils :
+
+1. Évaluez les compétences académiques
+- Vérifiez les qualifications et l\'expérience
+- Demandez des références ou témoignages
+- Assurez-vous de la maîtrise de la matière
+
+2. Observez les qualités pédagogiques
+- Capacité à expliquer clairement
+- Patience et écoute active
+- Adaptation au rythme de l\'élève
+
+3. Vérifiez la compatibilité
+- Rencontre préalable avec l\'enfant
+- Test de personnalité
+- Évaluation du feeling
+
+4. Structure des séances
+- Planification des objectifs
+- Méthodologie d\'enseignement
+- Outils pédagogiques utilisés
+
+5. Suivi et communication
+- Rapports réguliers de progression
+- Communication facile avec les parents
+- Flexibilité en cas de besoins spécifiques
+
+Notre recommandation :
+Privilégiez toujours la qualité pédagogique à la proximité géographique. Un bon précepteur sait adapter son approche et maintenir la motivation de l\'élève sur le long terme.
+                  ''',
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Article 2
+              _BlogPostCard(
+                title: '5 méthodes efficaces pour améliorer la concentration',
+                excerpt: 'Techniques éprouvées pour aider les enfants et adolescents à mieux se concentrer pendant les études.',
+                date: '10 Mars 2024',
+                readTime: '4 min',
+                category: 'Méthodologie',
+                imageAsset: 'assets/images/blog/concentration.jpg',
+                onTap: () => _showBlogDetail(
+                  context,
+                  title: '5 méthodes efficaces pour améliorer la concentration',
+                  content: '''
+La concentration est une compétence clé pour la réussite scolaire. Voici 5 méthodes efficaces :
+
+1. La technique Pomodoro
+- 25 minutes de travail intensif
+- 5 minutes de pause
+- Répéter 4 fois, puis pause longue
+- Idéal pour les devoirs et révisions
+
+2. L\'environnement d\'étude optimal
+- Espace dédié et organisé
+- Élimination des distractions
+- Bon éclairage et aération
+- Matériel à portée de main
+
+3. La planification intelligente
+- Sessions courtes et régulières
+- Alternance des matières
+- Moments propices (matin souvent meilleur)
+- Objectifs clairs par session
+
+4. Les pauses actives
+- Exercices physiques légers
+- Respiration profonde
+- Hydratation régulière
+- Changement de position
+
+5. Techniques de mindfulness
+- Méditation courte avant étude
+- Exercices de visualisation
+- Concentration sur la respiration
+- Reconnaissance des distractions
+
+Conseil SOMA :
+Commencez par mettre en place une seule méthode, observez les résultats, puis ajoutez progressivement les autres techniques.
+                  ''',
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Article 3
+              _BlogPostCard(
+                title: 'Les avantages du préceptorat personnalisé vs cours collectifs',
+                excerpt: 'Analyse comparative des bénéfices de l\'accompagnement individualisé pour des progrès rapides et durables.',
+                date: '5 Mars 2024',
+                readTime: '6 min',
+                category: 'Éducation',
+                imageAsset: 'assets/images/blog/personnalisation.jpg',
+                onTap: () => _showBlogDetail(
+                  context,
+                  title: 'Les avantages du préceptorat personnalisé vs cours collectifs',
+                  content: '''
+Le préceptorat personnalisé offre des avantages significatifs par rapport aux cours collectifs :
+
+Avantages du préceptorat personnalisé :
+
+1. Adaptation totale au rythme
+- Vitesse d\'apprentissage personnalisée
+- Focus sur les difficultés spécifiques
+- Pas de pression du groupe
+- Progression à son propre rythme
+
+2. Approche sur mesure
+- Méthodes adaptées au style d\'apprentissage
+- Exemples concrets pertinents
+- Flexibilité des horaires
+- Programme ajustable
+
+3. Confiance en soi
+- Environnement sans jugement
+- Encouragement constant
+- Reconnaissance des petits progrès
+- Relation de confiance avec le précepteur
+
+4. Résultats mesurables
+- Suivi précis des compétences
+- Objectifs clairs et atteignables
+- Évaluations régulières
+- Adaptation continue
+
+5. Motivation durable
+- Contenu intéressant pour l\'élève
+- Sentiment de compétence
+- Autonomie progressive
+- Plaisir d\'apprendre retrouvé
+
+Pourquoi choisir SOMA :
+Notre plateforme met en relation avec des précepteurs qui comprennent que chaque élève est unique et mérite un accompagnement taillé sur mesure.
+                  ''',
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Article 4
+              _BlogPostCard(
+                title: 'Comment gérer le stress des examens : guide pour parents',
+                excerpt: 'Stratégies pour aider votre enfant à aborder sereinement les périodes d\'évaluation scolaire.',
+                date: '28 Février 2024',
+                readTime: '5 min',
+                category: 'Bien-être',
+                imageAsset: 'assets/images/blog/stress.jpg',
+                onTap: () => _showBlogDetail(
+                  context,
+                  title: 'Comment gérer le stress des examens : guide pour parents',
+                  content: '''
+Le stress des examens peut être paralysant. Voici comment aider votre enfant :
+
+1. Préparation en amont
+- Planification des révisions
+- Création d\'un calendrier réaliste
+- Répartition équilibrée du travail
+- Révision active plutôt que passive
+
+2. Environnement serein
+- Dialogue ouvert sur les craintes
+- Valorisation de l\'effort plutôt que du résultat
+- Éviter les comparaisons
+- Maintenir une routine équilibrée
+
+3. Techniques de gestion du stress
+- Exercices de respiration
+- Visualisation positive
+- Pauses régulières
+- Activités physiques
+
+4. Alimentation et sommeil
+- Repas équilibrés et réguliers
+- Hydratation suffisante
+- Heures de coucher fixes
+- Limitation des écrans avant le sommeil
+
+5. Jour J
+- Préparation des affaires la veille
+- Petit-déjeuner nutritif
+- Arrivée en avance
+- Rappel des stratégies apprises
+
+Signaux d\'alerte :
+- Troubles du sommeil persistants
+- Perte d\'appétit
+- Irritabilité excessive
+- Évitement des révisions
+
+Notre approche SOMA :
+Nos précepteurs apprennent aux élèves à gérer le stress comme une compétence à développer, pas comme un ennemi à combattre.
+                  ''',
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Article 5
+              _BlogPostCard(
+                title: 'Les mathématiques autrement : rendre les maths accessibles',
+                excerpt: 'Approches innovantes pour démystifier les mathématiques et les rendre attractives pour tous les élèves.',
+                date: '20 Février 2024',
+                readTime: '7 min',
+                category: 'Mathématiques',
+                imageAsset: 'assets/images/blog/mathematiques.jpg',
+                onTap: () => _showBlogDetail(
+                  context,
+                  title: 'Les mathématiques autrement : rendre les maths accessibles',
+                  content: '''
+Les mathématiques ne sont pas réservées à une élite. Voici comment les rendre accessibles :
+
+1. Approche concrète
+- Liens avec la vie quotidienne
+- Manipulation d\'objets réels
+- Projets pratiques
+- Applications concrètes
+
+2. Apprentissage par le jeu
+- Jeux de logique et de stratégie
+- Défis mathématiques amusants
+- Compétitions saines
+- Applications éducatives
+
+3. Diversification des méthodes
+- Explications visuelles
+- Schémas et dessins
+- Histoires et scénarios
+- Méthodes alternatives de résolution
+
+4. Construction progressive
+- Retour aux bases si nécessaire
+- Consolidation étape par étape
+- Reconnaissance des petits succès
+- Patience et persévérance
+
+5. Culture mathématique
+- Histoire des mathématiques
+- Mathématiciens célèbres
+- Applications modernes
+- Beauté des concepts
+
+Erreurs à éviter :
+- Se focaliser uniquement sur les notes
+- Critiquer les erreurs sans les expliquer
+- Comparer avec d\'autres élèves
+- Négliger les fondamentaux
+
+Méthode SOMA :
+Nos précepteurs en mathématiques utilisent une approche multisensorielle qui s\'adapte au style d\'apprentissage de chaque élève.
+                  ''',
+                ),
+              ),
+              
+              const SizedBox(height: 40),
+              
+              // Catégories
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: kLightColor,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(color: Colors.grey.shade200),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      'Articles récents',
+                      'Catégories',
                       style: GoogleFonts.inter(
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: kDarkColor,
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Bientôt disponible - Nos articles éducatifs sont en cours de préparation.',
-                      style: TextStyle(fontStyle: FontStyle.italic),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _BlogCategoryChip(label: 'Conseils Parents'),
+                        _BlogCategoryChip(label: 'Méthodologie'),
+                        _BlogCategoryChip(label: 'Bien-être'),
+                        _BlogCategoryChip(label: 'Mathématiques'),
+                        _BlogCategoryChip(label: 'Sciences'),
+                        _BlogCategoryChip(label: 'Langues'),
+                        _BlogCategoryChip(label: 'Orientation'),
+                        _BlogCategoryChip(label: 'Motivation'),
+                      ],
                     ),
                   ],
                 ),
               ),
+              
+              const SizedBox(height: 40),
+              
+              // Newsletter
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [kPrimaryColor.withOpacity(0.1), kSecondaryColor.withOpacity(0.1)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.email, size: 48, color: kPrimaryColor),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Restez informé',
+                      style: GoogleFonts.inter(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: kDarkColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Inscrivez-vous à notre newsletter pour recevoir nos derniers articles et conseils éducatifs directement dans votre boîte mail.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextLight,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: 400,
+                      child: Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Votre adresse email',
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Inscription à la newsletter réussie !'),
+                                  backgroundColor: kSecondaryColor,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kPrimaryColor,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              'S\'abonner',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 60),
             ],
           ),
+        ),
+      ),
+    );
+  }
+  
+  void _showBlogDetail(BuildContext context, {
+    required String title,
+    required String content,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      builder: (context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.9,
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: kDarkColor),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Text(
+                'Article',
+                style: GoogleFonts.inter(
+                  color: kDarkColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: kDarkColor,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 32),
+                  Text(
+                    content,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      color: kTextDark,
+                      height: 1.8,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: kPrimaryColor.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline, color: kPrimaryColor, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Besoin d\'un accompagnement personnalisé ? Nos précepteurs sont là pour vous aider.',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: kTextDark,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/nos-precepteurs');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kSecondaryColor,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Trouver un précepteur',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Widget pour les cartes d'articles de blog
+class _BlogPostCard extends StatelessWidget {
+  final String title;
+  final String excerpt;
+  final String date;
+  final String readTime;
+  final String category;
+  final String imageAsset;
+  final VoidCallback onTap;
+
+  const _BlogPostCard({
+    required this.title,
+    required this.excerpt,
+    required this.date,
+    required this.readTime,
+    required this.category,
+    required this.imageAsset,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image
+              Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                  color: kPrimaryColor.withOpacity(0.1),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.article,
+                    size: 60,
+                    color: kPrimaryColor,
+                  ),
+                ),
+              ),
+              
+              // Contenu
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          category,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: kPrimaryColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        title,
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: kDarkColor,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        excerpt,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          color: kTextLight,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today, size: 16, color: kTextLight),
+                          const SizedBox(width: 6),
+                          Text(
+                            date,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: kTextLight,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Icon(Icons.timer, size: 16, color: kTextLight),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$readTime de lecture',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: kTextLight,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            'Lire l\'article →',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: kPrimaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Widget pour les catégories de blog
+class _BlogCategoryChip extends StatelessWidget {
+  final String label;
+
+  const _BlogCategoryChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          color: kTextDark,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

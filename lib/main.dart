@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
 
 // ====== CONSTANTES SOMA ======
 const kBrandName = 'SOMA';
@@ -61,7 +63,7 @@ class SomaApp extends StatelessWidget {
             fontWeight: FontWeight.w600,
             fontSize: 16,
           ),
-        ),
+      ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -393,7 +395,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       const SizedBox(height: 32),
                       
                       Text(
-                        '1. Niveau scolaire *',
+                        'Niveau scolaire',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -432,7 +434,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       const SizedBox(height: 24),
                       
                       Text(
-                        '2. Classe ou année',
+                        'Classe ou année',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -454,7 +456,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       const SizedBox(height: 24),
                       
                       Text(
-                        '3. Matière(s) à renforcer *',
+                        'Matière(s) à renforcer',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -495,7 +497,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       const SizedBox(height: 24),
                       
                       Text(
-                        '4. Fréquence souhaitée par semaine *',
+                        'Fréquence souhaitée par semaine',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -568,7 +570,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       const SizedBox(height: 32),
                       
                       Text(
-                        'Prénom et Nom *',
+                        'Prénom et Nom',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -597,7 +599,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       const SizedBox(height: 24),
                       
                       Text(
-                        'Numéro de Téléphone *',
+                        'Numéro de Téléphone',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -639,7 +641,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Commune *',
+                                        'Commune',
                                         style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -672,7 +674,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Quartier *',
+                                        'Quartier',
                                         style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -706,7 +708,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Commune *',
+                                  'Commune',
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -732,7 +734,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Quartier *',
+                                  'Quartier',
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -957,9 +959,11 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
   // Domaines prioritaires (cases à cocher)
   final Map<String, bool> _domainesPrioritaires = {
     'Mathématiques': false,
-    'Physique – Chimie': false,
-    'Français – Anglais': false,
-    'Autres matières scolaires': false,
+    'Physique': false,
+    'Chimie': false,
+    'Français': false,
+    'Anglais': false,
+    'Dessin Industriel': false,
     'Conception Assistée par Ordinateur (AutoCAD, SOLIDWORKS)': false,
     'Système d\'Information Géographique (ArcGIS)': false,
   };
@@ -972,12 +976,64 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
     'Français',
     'Anglais',
     'Dessin Industriel',
+    'Conception Assistée par Ordinateur',
+    'Système d\'Information Géographique',
     'Autres'
   ];
 
   // Variables pour les fichiers
-  String? _cvFileName;
-  String? _cniFileName;
+  PlatformFile? _cvFile;
+  PlatformFile? _cniFile;
+
+  // Fonction pour sélectionner un fichier
+  Future<void> _selectFile(String type) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+      );
+
+      if (result != null) {
+        PlatformFile file = result.files.first;
+        
+        // Vérifier la taille du fichier (max 10Mo)
+        if (file.size > 10 * 1024 * 1024) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Le fichier est trop volumineux. Maximum 10Mo'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+          return;
+        }
+
+        setState(() {
+          if (type == 'cv') {
+            _cvFile = file;
+          } else if (type == 'cni') {
+            _cniFile = file;
+          }
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fichier ${type == 'cv' ? 'CV' : 'Carte d\'identité'} sélectionné: ${file.name}'),
+            backgroundColor: kSecondaryColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors de la sélection du fichier: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -1048,8 +1104,8 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
       setState(() {
         _domaineCompetence = null;
         _hasExperience = null;
-        _cvFileName = null;
-        _cniFileName = null;
+        _cvFile = null;
+        _cniFile = null;
         _domainesPrioritaires.forEach((key, value) {
           _domainesPrioritaires[key] = false;
         });
@@ -1060,26 +1116,11 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
     }
   }
 
-  // Fonction pour simuler le téléversement de fichiers
-  void _simulerTeleversement(String type) async {
-    // Simuler un délai de téléversement
-    await Future.delayed(const Duration(seconds: 1));
-    
-    setState(() {
-      if (type == 'cv') {
-        _cvFileName = 'CV_${_nomController.text.isNotEmpty ? _nomController.text.split(' ').first : 'Candidat'}.pdf';
-      } else if (type == 'cni') {
-        _cniFileName = 'CNI_${_nomController.text.isNotEmpty ? _nomController.text.split(' ').first : 'Candidat'}.pdf';
-      }
-    });
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Fichier ${type == 'cv' ? 'CV' : 'Carte d\'identité'} téléversé avec succès !'),
-        backgroundColor: kSecondaryColor,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  // Fonction pour formater la taille du fichier
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   @override
@@ -1124,7 +1165,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                 const Divider(),
                 const SizedBox(height: 40),
                 
-                // Mot d'accroche (sans titre)
+                // Mot d'accroche
                 Container(
                   padding: const EdgeInsets.all(24),
                   margin: const EdgeInsets.only(bottom: 32),
@@ -1164,7 +1205,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                   ),
                 ),
                 
-                // Section 1 : Profils Recherchés
+                // Section : Profils Recherchés
                 Container(
                   padding: const EdgeInsets.all(32),
                   margin: const EdgeInsets.only(bottom: 32),
@@ -1187,7 +1228,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                           Icon(Icons.groups, size: 32, color: kPrimaryColor),
                           const SizedBox(width: 16),
                           Text(
-                            '1. Profils Recherchés',
+                            'Profils Recherchés',
                             style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
@@ -1236,7 +1277,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                   ),
                 ),
                 
-                // Section 2 : Domaines prioritaires
+                // Section : Domaines prioritaires
                 Container(
                   padding: const EdgeInsets.all(32),
                   margin: const EdgeInsets.only(bottom: 32),
@@ -1259,7 +1300,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                           Icon(Icons.category, size: 32, color: kPrimaryColor),
                           const SizedBox(width: 16),
                           Text(
-                            '2. Domaines prioritaires',
+                            'Domaines prioritaires',
                             style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
@@ -1304,7 +1345,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                   ),
                 ),
                 
-                // Section 3 : Formulaire de candidature
+                // Section : Formulaire de candidature
                 Container(
                   padding: const EdgeInsets.all(32),
                   margin: const EdgeInsets.only(bottom: 32),
@@ -1327,7 +1368,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                           Icon(Icons.description, size: 32, color: kPrimaryColor),
                           const SizedBox(width: 16),
                           Text(
-                            '3. Formulaire de candidature',
+                            'Formulaire de candidature',
                             style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
@@ -1338,9 +1379,9 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       ),
                       const SizedBox(height: 32),
                       
-                      // Sous-section 3.1 : Informations personnelles
+                      // Informations personnelles
                       Text(
-                        '3.1. Informations personnelles',
+                        'Informations personnelles',
                         style: GoogleFonts.inter(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -1351,7 +1392,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       // Prénom et Nom
                       Text(
-                        'Prénom et Nom *',
+                        'Prénom et Nom',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1379,7 +1420,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       const SizedBox(height: 20),
                       
-                      // Numéro de téléphone et Email en deux colonnes pour desktop
+                      // Numéro de téléphone et Email
                       LayoutBuilder(
                         builder: (context, constraints) {
                           if (constraints.maxWidth > 600) {
@@ -1390,7 +1431,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Numéro de téléphone *',
+                                        'Numéro de téléphone',
                                         style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -1428,7 +1469,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Adresse e-mail *',
+                                        'Adresse e-mail',
                                         style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -1467,7 +1508,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Numéro de téléphone *',
+                                  'Numéro de téléphone',
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -1498,7 +1539,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                                 ),
                                 const SizedBox(height: 20),
                                 Text(
-                                  'Adresse e-mail *',
+                                  'Adresse e-mail',
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -1537,7 +1578,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       // Commune / quartier de résidence
                       Text(
-                        'Commune / quartier de résidence *',
+                        'Commune / quartier de résidence',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1567,7 +1608,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       // CV (à téléverser)
                       Text(
-                        'CV *',
+                        'CV',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1584,7 +1625,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (_cvFileName != null)
+                            if (_cvFile != null)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: Row(
@@ -1592,19 +1633,33 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                                     Icon(Icons.attach_file, color: kPrimaryColor, size: 20),
                                     const SizedBox(width: 8),
                                     Expanded(
-                                      child: Text(
-                                        _cvFileName!,
-                                        style: GoogleFonts.inter(
-                                          color: kDarkColor,
-                                          fontSize: 14,
-                                        ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _cvFile!.name,
+                                            style: GoogleFonts.inter(
+                                              color: kDarkColor,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            _formatFileSize(_cvFile!.size),
+                                            style: GoogleFonts.inter(
+                                              color: kTextLight,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                                       onPressed: () {
                                         setState(() {
-                                          _cvFileName = null;
+                                          _cvFile = null;
                                         });
                                       },
                                     ),
@@ -1612,18 +1667,18 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                                 ),
                               ),
                             ElevatedButton.icon(
-                              onPressed: () => _simulerTeleversement('cv'),
+                              onPressed: () => _selectFile('cv'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kPrimaryColor.withOpacity(0.1),
                                 foregroundColor: kPrimaryColor,
                                 elevation: 0,
                               ),
                               icon: const Icon(Icons.upload_file),
-                              label: Text(_cvFileName == null ? 'Téléverser votre CV (PDF, moins de 2 Go)' : 'Remplacer le CV'),
+                              label: Text(_cvFile == null ? 'Sélectionner votre CV' : 'Remplacer le CV'),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Format PDF, taille maximale : 2 Go',
+                              'Formats acceptés : PDF, DOC, DOCX, JPG, PNG | Taille maximale : 10 Mo',
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 color: kTextLight,
@@ -1638,7 +1693,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       // Carte d'identité
                       Text(
-                        'Carte d\'identité *',
+                        'Carte d\'identité',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1655,7 +1710,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (_cniFileName != null)
+                            if (_cniFile != null)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: Row(
@@ -1663,19 +1718,33 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                                     Icon(Icons.attach_file, color: kPrimaryColor, size: 20),
                                     const SizedBox(width: 8),
                                     Expanded(
-                                      child: Text(
-                                        _cniFileName!,
-                                        style: GoogleFonts.inter(
-                                          color: kDarkColor,
-                                          fontSize: 14,
-                                        ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _cniFile!.name,
+                                            style: GoogleFonts.inter(
+                                              color: kDarkColor,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            _formatFileSize(_cniFile!.size),
+                                            style: GoogleFonts.inter(
+                                              color: kTextLight,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                                       onPressed: () {
                                         setState(() {
-                                          _cniFileName = null;
+                                          _cniFile = null;
                                         });
                                       },
                                     ),
@@ -1683,18 +1752,18 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                                 ),
                               ),
                             ElevatedButton.icon(
-                              onPressed: () => _simulerTeleversement('cni'),
+                              onPressed: () => _selectFile('cni'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kPrimaryColor.withOpacity(0.1),
                                 foregroundColor: kPrimaryColor,
                                 elevation: 0,
                               ),
                               icon: const Icon(Icons.upload_file),
-                              label: Text(_cniFileName == null ? 'Téléverser votre carte d\'identité (PDF, moins de 2 Go)' : 'Remplacer la carte d\'identité'),
+                              label: Text(_cniFile == null ? 'Sélectionner votre carte d\'identité' : 'Remplacer la carte d\'identité'),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Format PDF, taille maximale : 2 Go',
+                              'Formats acceptés : PDF, JPG, PNG | Taille maximale : 10 Mo',
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 color: kTextLight,
@@ -1707,9 +1776,9 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       const SizedBox(height: 32),
                       
-                      // Sous-section 3.2 : Profil académique / professionnel
+                      // Profil académique / professionnel
                       Text(
-                        '3.2. Profil académique / professionnel',
+                        'Profil académique / professionnel',
                         style: GoogleFonts.inter(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -1720,7 +1789,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       // Niveau d'études ou qualification
                       Text(
-                        'Niveau d\'études ou qualification *',
+                        'Niveau d\'études ou qualification',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1748,9 +1817,9 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       const SizedBox(height: 20),
                       
-                      // Domaine de compétence (liste déroulante)
+                      // Domaine de compétence
                       Text(
-                        'Domaine de compétence *',
+                        'Domaine de compétence',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1788,9 +1857,9 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       const SizedBox(height: 32),
                       
-                      // Sous-section 3.3 : Expérience
+                      // Expérience
                       Text(
-                        '3.3. Expérience',
+                        'Expérience',
                         style: GoogleFonts.inter(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -1799,9 +1868,9 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       ),
                       const SizedBox(height: 24),
                       
-                      // Expérience en enseignement ou encadrement (Oui / Non)
+                      // Expérience en enseignement ou encadrement
                       Text(
-                        'Expérience en enseignement ou encadrement *',
+                        'Expérience en enseignement ou encadrement',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1845,7 +1914,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       
                       const SizedBox(height: 20),
                       
-                      // Brève description de l'expérience (champ court)
+                      // Brève description de l'expérience
                       if (_hasExperience == true) ...[
                         Text(
                           'Brève description de l\'expérience',
@@ -1927,6 +1996,869 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ====== PAGE CONTACT ======
+class ContactPage extends StatefulWidget {
+  const ContactPage({super.key});
+
+  @override
+  State<ContactPage> createState() => _ContactPageState();
+}
+
+class _ContactPageState extends State<ContactPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _nomController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _sujetController = TextEditingController();
+  final _messageController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _nomController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _sujetController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isSubmitting = true;
+      });
+
+      // Simuler l'envoi du formulaire
+      await Future.delayed(const Duration(seconds: 2));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Message envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.'),
+          backgroundColor: kSecondaryColor,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      _formKey.currentState!.reset();
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: kDarkColor,
+        title: const _BrandMark(textColor: Colors.white, logoHeight: 28),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'CONTACTEZ-NOUS',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: kPrimaryColor,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Nous sommes à votre écoute',
+                style: GoogleFonts.inter(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  color: kDarkColor,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 40),
+
+              // Section informations de contact
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.contact_mail, size: 32, color: kPrimaryColor),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Informations de contact',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: kDarkColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Informations de contact en grille
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (constraints.maxWidth > 600) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _ContactInfoItem(
+                                  icon: Icons.location_on,
+                                  title: 'Adresse',
+                                  content: '067, avenue des Écuries\nQuartier Ruttens\nCommune de Lemba\nKinshasa, RDC',
+                                  color: kPrimaryColor,
+                                  onTap: () => _launch('https://maps.google.com'),
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                child: _ContactInfoItem(
+                                  icon: Icons.phone,
+                                  title: 'Téléphone',
+                                  content: '+243 999 867 334\n+243 900 000 000',
+                                  color: kSecondaryColor,
+                                  onTap: () => _launch('tel:+243999867334'),
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                child: _ContactInfoItem(
+                                  icon: Icons.email,
+                                  title: 'Email',
+                                  content: 'contact@soma-rdc.org\ninfo@soma-rdc.org',
+                                  color: kAccentColor,
+                                  onTap: () => _launch('mailto:contact@soma-rdc.org'),
+                                ),
+                              ),
+                            ],
+                          );
+                        } else {
+                          return Column(
+                            children: [
+                              _ContactInfoItem(
+                                icon: Icons.location_on,
+                                title: 'Adresse',
+                                content: '067, avenue des Écuries\nQuartier Ruttens\nCommune de Lemba\nKinshasa, RDC',
+                                color: kPrimaryColor,
+                                onTap: () => _launch('https://maps.google.com'),
+                              ),
+                              const SizedBox(height: 24),
+                              _ContactInfoItem(
+                                icon: Icons.phone,
+                                title: 'Téléphone',
+                                content: '+243 999 867 334\n+243 900 000 000',
+                                color: kSecondaryColor,
+                                onTap: () => _launch('tel:+243999867334'),
+                              ),
+                              const SizedBox(height: 24),
+                              _ContactInfoItem(
+                                icon: Icons.email,
+                                title: 'Email',
+                                content: 'contact@soma-rdc.org\ninfo@soma-rdc.org',
+                                color: kAccentColor,
+                                onTap: () => _launch('mailto:contact@soma-rdc.org'),
+                              ),
+                            ],
+                          );
+                        }
+                      },
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Horaires d'ouverture
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: kPrimaryColor.withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.access_time, color: kPrimaryColor, size: 24),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Horaires d\'ouverture',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Lundi - Vendredi : 8h00 - 18h00\nSamedi : 9h00 - 13h00\nDimanche : Fermé',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: kTextLight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Section formulaire de contact
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.message, size: 32, color: kPrimaryColor),
+                          const SizedBox(width: 16),
+                          Text(
+                            'Formulaire de contact',
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: kDarkColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      Text(
+                        'Envoyez-nous un message',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Remplissez ce formulaire et nous vous répondrons dans les plus brefs délais.',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: kTextLight,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      // Nom complet
+                      Text(
+                        'Nom complet *',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _nomController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Votre nom complet',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                          prefixIcon: Icon(Icons.person, color: kPrimaryColor),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Email et téléphone
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (constraints.maxWidth > 600) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Adresse email *',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: kDarkColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _emailController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          hintText: 'votre.email@example.com',
+                                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                                          prefixIcon: Icon(Icons.email, color: kPrimaryColor),
+                                        ),
+                                        keyboardType: TextInputType.emailAddress,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Ce champ est obligatoire';
+                                          }
+                                          if (!value.contains('@')) {
+                                            return 'Email invalide';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Numéro de téléphone',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: kDarkColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _phoneController,
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          hintText: '+243 999 867 334',
+                                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                                          prefixIcon: Icon(Icons.phone, color: kPrimaryColor),
+                                        ),
+                                        keyboardType: TextInputType.phone,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Adresse email *',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _emailController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    hintText: 'votre.email@example.com',
+                                    hintStyle: GoogleFonts.inter(color: kTextLight),
+                                    prefixIcon: Icon(Icons.email, color: kPrimaryColor),
+                                  ),
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Ce champ est obligatoire';
+                                    }
+                                    if (!value.contains('@')) {
+                                      return 'Email invalide';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  'Numéro de téléphone',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: kDarkColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  controller: _phoneController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    hintText: '+243 999 867 334',
+                                    hintStyle: GoogleFonts.inter(color: kTextLight),
+                                    prefixIcon: Icon(Icons.phone, color: kPrimaryColor),
+                                  ),
+                                  keyboardType: TextInputType.phone,
+                                ),
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Sujet
+                      Text(
+                        'Sujet *',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _sujetController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Sujet de votre message',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                          prefixIcon: Icon(Icons.subject, color: kPrimaryColor),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Message
+                      Text(
+                        'Message *',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _messageController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          hintText: 'Votre message...',
+                          hintStyle: GoogleFonts.inter(color: kTextLight),
+                          prefixIcon: Icon(Icons.message, color: kPrimaryColor),
+                        ),
+                        maxLines: 5,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // Bouton d'envoi
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isSubmitting ? null : _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: kSecondaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: _isSubmitting
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  'ENVOYER LE MESSAGE',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Section réseaux sociaux
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: kPrimaryColor.withOpacity(0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Suivez-nous sur les réseaux sociaux',
+                      style: GoogleFonts.inter(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: kDarkColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Restez informé de nos actualités, conseils et événements',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: kTextLight,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _SocialButton(
+                          icon: Icons.facebook,
+                          label: 'Facebook',
+                          onPressed: () => _launch('https://facebook.com/soma-rdc'),
+                          color: const Color(0xFF1877F2),
+                        ),
+                        const SizedBox(width: 16),
+                        _SocialButton(
+                          icon: Icons.link,
+                          label: 'LinkedIn',
+                          onPressed: () => _launch('https://linkedin.com/company/soma-rdc'),
+                          color: const Color(0xFF0077B5),
+                        ),
+                        const SizedBox(width: 16),
+                        _SocialButton(
+                          icon: Icons.photo_camera,
+                          label: 'Instagram',
+                          onPressed: () => _launch('https://instagram.com/soma_rdc'),
+                          color: const Color(0xFFE4405F),
+                        ),
+                        const SizedBox(width: 16),
+                        _SocialButton(
+                          icon: Icons.play_arrow,
+                          label: 'YouTube',
+                          onPressed: () => _launch('https://youtube.com/soma-rdc'),
+                          color: const Color(0xFFFF0000),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Section FAQ / Questions fréquentes
+              Container(
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(bottom: 32),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Questions fréquentes',
+                      style: GoogleFonts.inter(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: kDarkColor,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    _FAQItem(
+                      question: 'Comment puis-je trouver un précepteur pour mon enfant ?',
+                      answer: 'Rendez-vous sur la page "Nos précepteurs" et remplissez le formulaire de demande. Nous vous mettrons en relation avec un précepteur qualifié selon vos besoins.',
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    _FAQItem(
+                      question: 'Comment devenir précepteur chez SOMA ?',
+                      answer: 'Allez sur la page "Devenir précepteur" et remplissez le formulaire de candidature. Notre équipe étudiera votre profil et vous contactera rapidement.',
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    _FAQItem(
+                      question: 'Quels sont les tarifs des services ?',
+                      answer: 'Les tarifs varient selon le niveau scolaire, les matières enseignées et la fréquence des cours. Contactez-nous pour obtenir un devis personnalisé.',
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    _FAQItem(
+                      question: 'Quelle est la durée d\'un cours de préceptorat ?',
+                      answer: 'Les cours durent généralement 1h30 à 2h, avec la possibilité d\'ajuster la durée selon les besoins spécifiques de l\'élève.',
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Widget pour les éléments d'information de contact
+class _ContactInfoItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String content;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ContactInfoItem({
+    required this.icon,
+    required this.title,
+    required this.content,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              content,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: kTextDark,
+                height: 1.6,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Widget pour les boutons de réseaux sociaux
+class _SocialButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final Color color;
+
+  const _SocialButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: Icon(icon, color: Colors.white, size: 28),
+            onPressed: onPressed,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: kDarkColor,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Widget pour les questions fréquentes
+class _FAQItem extends StatelessWidget {
+  final String question;
+  final String answer;
+
+  const _FAQItem({
+    required this.question,
+    required this.answer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kLightColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.help_outline, color: kPrimaryColor, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  question,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: kDarkColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 32),
+            child: Text(
+              answer,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: kTextLight,
+                height: 1.6,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2760,7 +3692,7 @@ class _ServiceItem {
   const _ServiceItem(this.title, this.description, this.icon, {this.details = ''});
 }
 
-// ====== CARTE DE SERVICE CORRIGÉE (pour page services) ======
+// ====== CARTE DE SERVICE CORRIGÉE ======
 class _ServiceCard extends StatelessWidget {
   final _ServiceItem service;
   final bool isExpanded;
@@ -4578,7 +5510,7 @@ class BlogPage extends StatelessWidget {
   }
 }
 
-// ====== PAGE À PROPOS (MISE À JOUR COMPLÈTE) ======
+// ====== PAGE À PROPOS ======
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
@@ -5026,94 +5958,6 @@ class AboutPage extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ====== PAGE CONTACT ======
-class ContactPage extends StatelessWidget {
-  const ContactPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: kDarkColor,
-        title: const _BrandMark(textColor: Colors.white, logoHeight: 28),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Contactez-nous',
-                style: GoogleFonts.inter(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w800,
-                  color: kDarkColor,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 30),
-              Text(
-                'Nous sommes à votre écoute',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  color: kTextLight,
-                ),
-              ),
-              const SizedBox(height: 40),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Informations de contact',
-                      style: GoogleFonts.inter(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: kDarkColor,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const _ContactInfo(
-                      icon: Icons.email,
-                      text: 'contact@soma-rdc.org',
-                    ),
-                    const _ContactInfo(
-                      icon: Icons.phone,
-                      text: '+243 999 867 334',
-                    ),
-                    const _ContactInfo(
-                      icon: Icons.location_on,
-                      text: '067, avenue des Écuries, quartier Ruttens, commune de Lemba, Kinshasa, RDC',
                     ),
                   ],
                 ),

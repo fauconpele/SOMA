@@ -27,6 +27,52 @@ void main() {
   runApp(const SomaApp());
 }
 
+// ====== FONCTION POUR ENVOYER UN EMAIL ======
+Future<void> _sendEmail({
+  required String to,
+  required String subject,
+  required String body,
+  BuildContext? context,
+}) async {
+  try {
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: to,
+      queryParameters: {
+        'subject': subject,
+        'body': body,
+      },
+    );
+
+    if (await canLaunchUrl(emailLaunchUri)) {
+      await launchUrl(emailLaunchUri, mode: LaunchMode.externalApplication);
+      
+      // Afficher un message de succès
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('L\'application email s\'ouvre... Remplissez et envoyez le message.'),
+            backgroundColor: kSecondaryColor,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } else {
+      throw 'Impossible d\'ouvrir l\'application email';
+    }
+  } catch (e) {
+    if (context != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: $e\nCopiez manuellement les informations et envoyez-les à $to'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
+  }
+}
+
 // ====== APPLICATION SOMA ======
 class SomaApp extends StatelessWidget {
   const SomaApp({super.key});
@@ -63,7 +109,7 @@ class SomaApp extends StatelessWidget {
             fontWeight: FontWeight.w600,
             fontSize: 16,
           ),
-      ),
+        ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -297,15 +343,44 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
         return;
       }
 
-      // Afficher une confirmation
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Demande envoyée avec succès ! Nous vous contacterons bientôt.'),
-          backgroundColor: kSecondaryColor,
-          duration: Duration(seconds: 3),
-        ),
+      // Préparation du contenu de l'email
+      final emailBody = '''
+NOUVELLE DEMANDE DE PRÉCEPTEUR - SOMA
+
+=== INFORMATIONS SUR L'ÉLÈVE ===
+Niveau scolaire: $_niveauScolaire
+Classe/Année: ${_classeController.text}
+Matières à renforcer: ${matieresSelectionnees.join(', ')}
+Fréquence souhaitée: $_frequenceSouhaitee
+
+=== INFORMATIONS DU PARENT ===
+Nom complet: ${_parentNameController.text}
+Téléphone: ${_phoneController.text}
+
+Adresse:
+Commune: ${_communeController.text}
+Quartier: ${_quartierController.text}
+Avenue: ${_avenueController.text}
+Numéro: ${_numeroController.text}
+
+=== DATE ET HEURE ===
+${DateTime.now().toLocal()}
+
+---
+Ce message a été envoyé via l'application SOMA.
+      ''';
+
+      final emailSubject = 'Demande de précepteur - ${_parentNameController.text}';
+
+      // Ouvrir l'application email avec les informations pré-remplies
+      _sendEmail(
+        to: 'contact@soma-rdc.org',
+        subject: emailSubject,
+        body: emailBody,
+        context: context,
       );
 
+      // Réinitialiser le formulaire
       _formKey.currentState!.reset();
       setState(() {
         _niveauScolaire = null;
@@ -314,8 +389,6 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
           _matieresSelectionnees[key] = false;
         });
       });
-
-      Navigator.pop(context);
     }
   }
 
@@ -890,7 +963,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'N.B : Après avoir complété toutes ces informations, appuyez sur le bouton "Soumettre la demande" pour que nous puissions recevoir directement la demande dans notre boîte mail.',
+                          'N.B : Après avoir complété toutes ces informations, appuyez sur le bouton "Soumettre la demande" pour ouvrir votre application email avec toutes les informations pré-remplies.',
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             color: kDarkColor,
@@ -919,7 +992,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    child: const Text('SOUMETTRE LA DEMANDE'),
+                    child: const Text('ENVOYER LA DEMANDE PAR EMAIL'),
                   ),
                 ),
                 
@@ -1090,13 +1163,45 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
         return;
       }
 
-      // Afficher une confirmation
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Candidature envoyée avec succès ! Nous vous contacterons bientôt.'),
-          backgroundColor: kSecondaryColor,
-          duration: Duration(seconds: 3),
-        ),
+      // Préparation du contenu de l'email
+      final emailBody = '''
+NOUVELLE CANDIDATURE PRÉCEPTEUR - SOMA
+
+=== INFORMATIONS PERSONNELLES ===
+Nom complet: ${_nomController.text}
+Téléphone: ${_phoneController.text}
+Email: ${_emailController.text}
+Adresse: ${_communeController.text}, ${_quartierController.text}
+
+=== PROFIL ACADÉMIQUE/PROFESSIONNEL ===
+Niveau d'études: ${_niveauEtudesController.text}
+Domaine de compétence: $_domaineCompetence
+Domaines prioritaires: ${domainesSelectionnes.join(', ')}
+
+=== EXPÉRIENCE ===
+Expérience en enseignement: ${_hasExperience == true ? 'Oui' : 'Non'}
+${_hasExperience == true && _experienceController.text.isNotEmpty ? 'Description: ${_experienceController.text}' : ''}
+
+=== FICHIERS ===
+CV: ${_cvFile != null ? '${_cvFile!.name} (${_formatFileSize(_cvFile!.size)})' : 'Non fourni'}
+Carte d'identité: ${_cniFile != null ? '${_cniFile!.name} (${_formatFileSize(_cniFile!.size)})' : 'Non fourni'}
+
+=== DATE ET HEURE ===
+${DateTime.now().toLocal()}
+
+---
+Ce message a été envoyé via l'application SOMA.
+NOTE: Les fichiers sont à envoyer séparément par email ou à remettre en main propre.
+      ''';
+
+      final emailSubject = 'Candidature Précepteur - ${_nomController.text}';
+
+      // Ouvrir l'application email avec les informations pré-remplies
+      _sendEmail(
+        to: 'contact@soma-rdc.org',
+        subject: emailSubject,
+        body: emailBody,
+        context: context,
       );
 
       // Réinitialiser le formulaire
@@ -1110,9 +1215,6 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
           _domainesPrioritaires[key] = false;
         });
       });
-
-      // Fermer la page ou retourner à l'accueil
-      Navigator.pop(context);
     }
   }
 
@@ -1957,7 +2059,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'N.B : Après avoir complété toutes ces informations, appuyez sur le bouton "Soumettre la candidature" pour que nous puissions recevoir directement la demande dans notre boîte mail.',
+                          'N.B : Après avoir complété toutes ces informations, appuyez sur le bouton "Soumettre la candidature" pour ouvrir votre application email avec toutes les informations pré-remplies.',
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             color: kDarkColor,
@@ -1987,7 +2089,7 @@ class _DevenirPrecepteurPageState extends State<DevenirPrecepteurPage> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    child: const Text('SOUMETTRE LA CANDIDATURE'),
+                    child: const Text('ENVOYER LA CANDIDATURE PAR EMAIL'),
                   ),
                 ),
                 
@@ -2034,15 +2136,35 @@ class _ContactPageState extends State<ContactPage> {
         _isSubmitting = true;
       });
 
-      // Simuler l'envoi du formulaire
-      await Future.delayed(const Duration(seconds: 2));
+      // Préparation du contenu de l'email
+      final emailBody = '''
+NOUVEAU MESSAGE DE CONTACT - SOMA
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Message envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.'),
-          backgroundColor: kSecondaryColor,
-          duration: Duration(seconds: 3),
-        ),
+=== INFORMATIONS DU CONTACT ===
+Nom: ${_nomController.text}
+Email: ${_emailController.text}
+Téléphone: ${_phoneController.text}
+
+=== MESSAGE ===
+Sujet: ${_sujetController.text}
+
+${_messageController.text}
+
+=== DATE ET HEURE ===
+${DateTime.now().toLocal()}
+
+---
+Ce message a été envoyé via l'application SOMA.
+      ''';
+
+      final emailSubject = 'Contact SOMA - ${_sujetController.text}';
+
+      // Ouvrir l'application email avec les informations pré-remplies
+      await _sendEmail(
+        to: 'contact@soma-rdc.org',
+        subject: emailSubject,
+        body: emailBody,
+        context: context,
       );
 
       _formKey.currentState!.reset();
@@ -2546,7 +2668,7 @@ class _ContactPageState extends State<ContactPage> {
                                   ),
                                 )
                               : Text(
-                                  'ENVOYER LE MESSAGE',
+                                  'ENVOYER LE MESSAGE PAR EMAIL',
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,

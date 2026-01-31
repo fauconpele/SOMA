@@ -11,6 +11,7 @@ import 'pages/devenir_precepteur_page.dart';
 import 'pages/not_found_page.dart';
 
 class SomaApp extends StatelessWidget {
+  // ✅ IMPORTANT : constructeur "par défaut" (unnamed) => SomaApp()
   const SomaApp({super.key});
 
   @override
@@ -28,7 +29,8 @@ class SomaApp extends StatelessWidget {
         '/nos-precepteurs': (_) => const NosPrecepteursPage(),
         '/devenir-precepteur': (_) => const DevenirPrecepteurPage(),
       },
-      onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const NotFoundPage()),
+      onUnknownRoute: (_) =>
+          MaterialPageRoute(builder: (_) => const NotFoundPage()),
     );
   }
 }

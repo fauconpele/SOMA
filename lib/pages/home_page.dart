@@ -1,4 +1,3 @@
-// lib/pages/home_page.dart
 import 'package:flutter/material.dart';
 import '../core/constants.dart';
 import '../widgets/common/brand_mark.dart';
@@ -31,18 +30,16 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    _scrollController.addListener(_refreshFabVisibility);
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshFabVisibility());
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
+    _scrollController.removeListener(_refreshFabVisibility);
     _scrollController.dispose();
     super.dispose();
   }
-
-  void _onScroll() => _refreshFabVisibility();
 
   void _refreshFabVisibility() {
     if (!mounted) return;
@@ -52,8 +49,8 @@ class _HomePageState extends State<HomePage> {
     final offset = pos.pixels;
     final max = pos.maxScrollExtent;
 
-    final showTop = offset > 220;
-    final showBottom = max > 220 && (max - offset) > 220;
+    final showTop = offset > 260;
+    final showBottom = max > 260 && (max - offset) > 260;
 
     if (showTop != _showTop || showBottom != _showBottom) {
       setState(() {
@@ -63,18 +60,18 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _goTop() async {
+  void _goTop() {
     if (!_scrollController.hasClients) return;
-    await _scrollController.animateTo(
+    _scrollController.animateTo(
       0,
       duration: const Duration(milliseconds: 450),
       curve: Curves.easeOutCubic,
     );
   }
 
-  Future<void> _goBottom() async {
+  void _goBottom() {
     if (!_scrollController.hasClients) return;
-    await _scrollController.animateTo(
+    _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
       duration: const Duration(milliseconds: 520),
       curve: Curves.easeOutCubic,
@@ -109,16 +106,35 @@ class _HomePageState extends State<HomePage> {
               label: 'Contact',
               onTap: () => Navigator.pushNamed(context, '/contact'),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
+
+            // ✅ Devenir précepteur (bien visible)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+              child: GhostButton(
+                label: 'Devenir précepteur',
+                icon: Icons.person_add_alt_1_rounded,
+                onPressed: () => Navigator.pushNamed(context, '/devenir-precepteur'),
+              ),
+            ),
+
+            // ✅ Trouver un précepteur (CTA)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
               child: CtaButton(
                 label: 'Trouver un précepteur',
+                icon: Icons.search_rounded,
                 onPressed: () => Navigator.pushNamed(context, '/nos-precepteurs'),
               ),
             ),
             const SizedBox(width: 8),
           ] else ...[
+            // ✅ Mobile: rendre "Devenir précepteur" visible même sans ouvrir le menu
+            IconButton(
+              tooltip: 'Devenir précepteur',
+              icon: const Icon(Icons.person_add_alt_1_rounded),
+              onPressed: () => Navigator.pushNamed(context, '/devenir-precepteur'),
+            ),
             IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () => NavSheet.open(context),
@@ -127,55 +143,48 @@ class _HomePageState extends State<HomePage> {
           ],
         ],
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Scrollbar(
-              controller: _scrollController,
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                child: const Column(
-                  children: [
-                    HeroSection(),
-                    AboutSection(),
-                    ServicesHomeSection(),
-                    WhySection(),
-                    TeamSection(),
-                    TestimonialsSection(),
-                    CtaSection(),
-                    FooterSection(),
-                    SizedBox(height: 80), // espace pour ne pas gêner les boutons flottants
-                  ],
-                ),
-              ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: const Column(
+              children: [
+                HeroSection(),
+                AboutSection(),
+                ServicesHomeSection(),
+                WhySection(),
+                TeamSection(),
+                TestimonialsSection(),
+                CtaSection(),
+                FooterSection(),
+              ],
             ),
+          ),
 
-            // ✅ Boutons "Haut" / "Bas" pour la page d'accueil aussi
-            Positioned(
-              right: 16,
-              bottom: 16,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _ScrollFab(
-                    visible: _showTop,
-                    tooltip: 'Aller en haut',
-                    icon: Icons.keyboard_arrow_up_rounded,
-                    onPressed: _goTop,
-                  ),
-                  const SizedBox(height: 10),
-                  _ScrollFab(
-                    visible: _showBottom,
-                    tooltip: 'Aller en bas',
-                    icon: Icons.keyboard_arrow_down_rounded,
-                    onPressed: _goBottom,
-                  ),
-                ],
-              ),
+          // ✅ Boutons haut / bas (Home aussi)
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _ScrollFab(
+                  visible: _showTop,
+                  tooltip: 'Aller en haut',
+                  icon: Icons.keyboard_arrow_up_rounded,
+                  onPressed: _goTop,
+                ),
+                const SizedBox(height: 10),
+                _ScrollFab(
+                  visible: _showBottom,
+                  tooltip: 'Aller en bas',
+                  icon: Icons.keyboard_arrow_down_rounded,
+                  onPressed: _goBottom,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -192,7 +201,7 @@ class _ScrollFab extends StatelessWidget {
   final bool visible;
   final String tooltip;
   final IconData icon;
-  final Future<void> Function() onPressed;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +216,7 @@ class _ScrollFab extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(14),
-              onTap: () => onPressed(),
+              onTap: onPressed,
               child: Container(
                 width: 48,
                 height: 48,

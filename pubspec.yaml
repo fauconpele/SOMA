@@ -1,16 +1,18 @@
 name: soma_platform
-description: SOMA - Plateforme éducative en RDC
-publish_to: 'none'
+description: "SOMA - Plateforme éducative en RDC"
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.9.0 <4.0.0'
+  sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
+
   cupertino_icons: ^1.0.8
+  shared_preferences: ^2.2.2
   google_fonts: ^6.2.1
   url_launcher: ^6.3.0
   video_player: ^2.9.1
@@ -24,10 +26,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
+
   assets:
-    # Assets de base requis
-    - assets/images/logo_soma.png
-    - assets/images/logo_soma_white.png
-    - assets/videos/hero_bg.mp4
+    - assets/images/
     - assets/images/team/
+    - assets/images/blog/
+    - assets/videos/

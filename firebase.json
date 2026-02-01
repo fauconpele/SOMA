@@ -1,0 +1,28 @@
+{
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "soma-a7a5a",
+          "configurations": {
+            "web": "1:423735321404:web:a4e0d361e49515a5f47439",
+            "windows": "1:423735321404:web:a4e0d361e49515a5f47439"
+          }
+        }
+      },
+      "android": {
+        "default": {
+          "projectId": "soma-a7a5a",
+          "appId": "1:423735321404:android:fe857abcbb5d3a0ff47439",
+          "fileOutput": "android/app/google-services.json"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "default",
+    "location": "europe-west4",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

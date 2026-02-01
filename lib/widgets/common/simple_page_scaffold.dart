@@ -30,7 +30,7 @@ class SimplePageScaffold extends StatefulWidget {
   final double maxWidth;
   final EdgeInsetsGeometry? padding;
 
-  /// Affiche les boutons "Haut" et "Bas" sur toutes les pages qui utilisent ce scaffold.
+  /// ✅ Affiche les boutons "Haut" et "Bas" sur toutes les pages qui utilisent ce scaffold.
   final bool showScrollToTopBottom;
 
   @override
@@ -99,8 +99,7 @@ class _SimplePageScaffoldState extends State<SimplePageScaffold> {
   @override
   Widget build(BuildContext context) {
     final bg = widget.backgroundColor ?? kLightColor;
-    final pad = widget.padding ??
-        const EdgeInsets.symmetric(horizontal: 20, vertical: 24);
+    final pad = widget.padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 24);
 
     return Scaffold(
       backgroundColor: bg,
@@ -224,7 +223,7 @@ class _HeaderCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: kPrimaryColor.withOpacity(0.25), width: 1),
             ),
-            child: Icon(Icons.contact_support_rounded, color: kPrimaryColor, size: 24),
+            child: Icon(Icons.arrow_forward_rounded, color: kPrimaryColor, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(

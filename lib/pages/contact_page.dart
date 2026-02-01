@@ -533,7 +533,7 @@ class _ContactRow extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          color: cs.surfaceVariant.withOpacity(0.30),
+          color: cs.surfaceContainerHighest.withOpacity(0.30),
           border: Border.all(color: cs.outlineVariant.withOpacity(0.50)),
         ),
         child: Row(
@@ -719,18 +719,18 @@ class _PrimaryActionButton extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.disabled)) {
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
               return color.withOpacity(0.45);
             }
             return color;
           }),
-          foregroundColor: MaterialStateProperty.all(Colors.white),
-          elevation: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.disabled)) return 0;
+          foregroundColor: WidgetStateProperty.all(Colors.white),
+          elevation: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) return 0;
             return 0;
           }),
-          shape: MaterialStateProperty.all(
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
         ),
@@ -766,16 +766,16 @@ class _OutlineActionButton extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         style: ButtonStyle(
-          foregroundColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.disabled)) return color.withOpacity(0.45);
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) return color.withOpacity(0.45);
             return color;
           }),
-          side: MaterialStateProperty.resolveWith((states) {
-            final c = states.contains(MaterialState.disabled) ? color.withOpacity(0.30) : color.withOpacity(0.85);
+          side: WidgetStateProperty.resolveWith((states) {
+            final c = states.contains(WidgetState.disabled) ? color.withOpacity(0.30) : color.withOpacity(0.85);
             return BorderSide(color: c, width: 1.4);
           }),
-          backgroundColor: MaterialStateProperty.all(Colors.transparent),
-          shape: MaterialStateProperty.all(
+          backgroundColor: WidgetStateProperty.all(Colors.transparent),
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
         ),

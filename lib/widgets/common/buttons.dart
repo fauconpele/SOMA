@@ -37,7 +37,7 @@ class CtaButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 14),
       ).copyWith(
-        overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.10)),
+        overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.10)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -99,7 +99,7 @@ class GhostButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 14),
       ).copyWith(
-        overlayColor: MaterialStateProperty.all(c.withOpacity(0.08)),
+        overlayColor: WidgetStateProperty.all(c.withOpacity(0.08)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

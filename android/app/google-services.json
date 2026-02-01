@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "423735321404",
+    "project_id": "soma-a7a5a",
+    "storage_bucket": "soma-a7a5a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:423735321404:android:fe857abcbb5d3a0ff47439",
+        "android_client_info": {
+          "package_name": "com.example.soma"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCms9U5f-A2mAvPCwjXUUSGjMsi4ddnWyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

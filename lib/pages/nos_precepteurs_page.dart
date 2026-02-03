@@ -110,8 +110,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
 
     return SimplePageScaffold(
       title: 'Nos précepteurs',
-      subtitle:
-          'Filtrez, comparez, puis contactez le bon profil en quelques clics.',
+      subtitle: 'Filtrez, comparez, puis contactez le bon profil en quelques clics.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -139,12 +138,10 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
           ),
           const SizedBox(height: 18),
 
-          // ✅ Petit bandeau “Devenir précepteur”
           _BecomePrecepteurBanner(
             radius: r,
             onBecome: () => Navigator.pushNamed(context, '/devenir-precepteur'),
           ),
-
           const SizedBox(height: 16),
 
           Row(
@@ -158,19 +155,40 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                 ),
               ),
               const Spacer(),
-              _MiniPill(
-                icon: Icons.verified_rounded,
-                label: 'Vérifiés',
-                active: _onlyVerified,
+              InkWell(
+                borderRadius: BorderRadius.circular(999),
+                onTap: () => setState(() => _onlyVerified = !_onlyVerified),
+                child: _MiniPill(
+                  icon: Icons.verified_rounded,
+                  label: 'Vérifiés',
+                  active: _onlyVerified,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 12),
 
+          // ✅ IMPORTANT : Mobile => LISTE (flexible), sinon GRID
           LayoutBuilder(builder: (context, c) {
             final w = c.maxWidth;
             final crossCount = w > 1000 ? 3 : (w > 650 ? 2 : 1);
 
+            if (crossCount == 1) {
+              // ✅ ListView : hauteur libre, plus de bandes jaunes/noires
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: list.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (_, i) => _PrecepteurCard(
+                  p: list[i],
+                  radius: r,
+                  onTap: () => _openProfile(context, list[i]),
+                ),
+              );
+            }
+
+            // ✅ Grid pour tablette / web
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -178,7 +196,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                 crossAxisCount: crossCount,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: crossCount == 1 ? 1.25 : 0.88,
+                childAspectRatio: 0.88,
               ),
               itemCount: list.length,
               itemBuilder: (_, i) => _PrecepteurCard(
@@ -190,6 +208,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
           }),
 
           const SizedBox(height: 18),
+
           _HelpBanner(
             radius: r,
             onContact: () => Navigator.pushNamed(context, '/contact'),
@@ -217,10 +236,8 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
             height: MediaQuery.of(context).size.height * 0.92,
             child: Column(
               children: [
-                // Header
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
                     color: kDarkColor,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(r)),
@@ -242,8 +259,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       IconButton(
                         tooltip: 'Fermer',
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded,
-                            color: Colors.white),
+                        icon: const Icon(Icons.close_rounded, color: Colors.white),
                       ),
                     ],
                   ),
@@ -279,13 +295,9 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                         const SizedBox(height: 16),
                         _InfoRow(icon: Icons.location_on_rounded, text: p.city),
                         const SizedBox(height: 10),
-                        _InfoRow(
-                            icon: Icons.school_rounded,
-                            text: p.levels.join(' • ')),
+                        _InfoRow(icon: Icons.school_rounded, text: p.levels.join(' • ')),
                         const SizedBox(height: 10),
-                        _InfoRow(
-                            icon: Icons.video_call_rounded,
-                            text: p.formats.join(' • ')),
+                        _InfoRow(icon: Icons.video_call_rounded, text: p.formats.join(' • ')),
 
                         const SizedBox(height: 18),
                         Container(
@@ -294,13 +306,11 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                           decoration: BoxDecoration(
                             color: kPrimaryColor.withOpacity(0.06),
                             borderRadius: BorderRadius.circular(14),
-                            border:
-                                Border.all(color: kPrimaryColor.withOpacity(0.14)),
+                            border: Border.all(color: kPrimaryColor.withOpacity(0.14)),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.lightbulb_rounded,
-                                  color: kPrimaryColor),
+                              Icon(Icons.lightbulb_rounded, color: kPrimaryColor),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -322,7 +332,6 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                   ),
                 ),
 
-                // Actions
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
                   child: Row(
@@ -334,8 +343,7 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                             Navigator.pushNamed(context, '/contact');
                           },
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                                color: kPrimaryColor.withOpacity(0.5)),
+                            side: BorderSide(color: kPrimaryColor.withOpacity(0.5)),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -458,7 +466,6 @@ class _FiltersCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Search
           TextField(
             controller: searchCtrl,
             onChanged: (_) => onChanged(),
@@ -471,8 +478,7 @@ class _FiltersCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             ),
           ),
           const SizedBox(height: 12),
@@ -520,7 +526,6 @@ class _FiltersCard extends StatelessWidget {
                   value: onlyVerified,
                   onChanged: onOnlyVerifiedChanged,
                 ),
-                const SizedBox(width: 2),
                 TextButton.icon(
                   onPressed: onClear,
                   icon: const Icon(Icons.refresh_rounded, size: 18),
@@ -530,8 +535,7 @@ class _FiltersCard extends StatelessWidget {
                   ),
                   style: TextButton.styleFrom(
                     foregroundColor: kPrimaryColor,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
               ],
@@ -621,8 +625,7 @@ class _BecomePrecepteurBanner extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.star_rounded,
-                      color: kAccentColor.withOpacity(0.95)),
+                  Icon(Icons.star_rounded, color: kAccentColor.withOpacity(0.95)),
                   const SizedBox(width: 8),
                   text,
                 ],
@@ -648,7 +651,11 @@ class _BecomePrecepteurBanner extends StatelessWidget {
 }
 
 class _PrecepteurCard extends StatelessWidget {
-  const _PrecepteurCard({required this.p, required this.radius, required this.onTap});
+  const _PrecepteurCard({
+    required this.p,
+    required this.radius,
+    required this.onTap,
+  });
 
   final _Precepteur p;
   final double radius;
@@ -677,153 +684,157 @@ class _PrecepteurCard extends StatelessWidget {
             ],
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min, // ✅ flexible en LISTE mobile
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // cover image
-              Expanded(
-                flex: 3,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: (p.avatarAsset != null)
-                            ? Image.asset(
-                                p.avatarAsset!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _CoverFallback(name: p.name),
-                              )
-                            : _CoverFallback(name: p.name),
-                      ),
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.02),
-                                Colors.black.withOpacity(0.20),
-                              ],
-                            ),
+              ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
+                child: Stack(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 16 / 10,
+                      child: (p.avatarAsset != null)
+                          ? Image.asset(
+                              p.avatarAsset!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _CoverFallback(name: p.name),
+                            )
+                          : _CoverFallback(name: p.name),
+                    ),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.02),
+                              Colors.black.withOpacity(0.20),
+                            ],
                           ),
                         ),
                       ),
-                      Positioned(
-                        left: 12,
-                        top: 12,
-                        child: _PillBadge(
-                          icon: p.verified
-                              ? Icons.verified_rounded
-                              : Icons.info_outline_rounded,
-                          label: p.verified ? 'Vérifié' : 'Profil',
-                          color: badgeColor,
-                        ),
+                    ),
+                    Positioned(
+                      left: 12,
+                      top: 12,
+                      child: _PillBadge(
+                        icon: p.verified
+                            ? Icons.verified_rounded
+                            : Icons.info_outline_rounded,
+                        label: p.verified ? 'Vérifié' : 'Profil',
+                        color: badgeColor,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
 
-              // content
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        p.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: kDarkColor,
-                        ),
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      p.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: kDarkColor,
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        p.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: kTextLight,
-                          height: 1.35,
-                        ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      p.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: kTextLight,
+                        height: 1.35,
                       ),
-                      const SizedBox(height: 10),
+                    ),
+                    const SizedBox(height: 10),
 
-                      Row(
-                        children: [
-                          Icon(Icons.location_on_rounded,
-                              size: 16, color: kTextLight),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              p.city,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
-                                color: kTextLight,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      Row(
-                        children: [
-                          Icon(Icons.star_rounded,
-                              size: 18, color: kAccentColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            p.rating.toStringAsFixed(1),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_rounded,
+                            size: 16, color: kTextLight),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            p.city,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w900,
-                              color: kDarkColor,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '(${p.reviews} avis)',
-                            style: GoogleFonts.inter(
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                               color: kTextLight,
-                              fontSize: 12.5,
                             ),
                           ),
-                          const Spacer(),
-                          const Icon(Icons.chevron_right_rounded,
-                              color: kTextLight),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
 
-                      const Spacer(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              Icon(Icons.star_rounded,
+                                  size: 18, color: kAccentColor),
+                              Text(
+                                p.rating.toStringAsFixed(1),
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w900,
+                                  color: kDarkColor,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              Text(
+                                '(${p.reviews} avis)',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w700,
+                                  color: kTextLight,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded, color: kTextLight),
+                      ],
+                    ),
 
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final f in p.formats.take(2))
-                            _ChipMini(
-                                text: f,
-                                color: kPrimaryColor.withOpacity(0.12)),
-                          for (final l in p.levels.take(1))
-                            _ChipMini(
-                                text: l,
-                                color: kSecondaryColor.withOpacity(0.12)),
-                        ],
-                      ),
-                    ],
-                  ),
+                    const SizedBox(height: 12),
+
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final f in p.formats.take(2))
+                          _ChipMini(
+                            text: f,
+                            color: kPrimaryColor.withOpacity(0.12),
+                          ),
+                        for (final l in p.levels.take(1))
+                          _ChipMini(
+                            text: l,
+                            color: kSecondaryColor.withOpacity(0.12),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -856,8 +867,7 @@ class _ProfileHero extends StatelessWidget {
                 ? Image.asset(
                     p.avatarAsset!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        _CoverFallback(name: p.name),
+                    errorBuilder: (_, __, ___) => _CoverFallback(name: p.name),
                   )
                 : _CoverFallback(name: p.name),
           ),
@@ -918,8 +928,7 @@ class _ProfileHero extends StatelessWidget {
                       ),
                     _PillBadge(
                       icon: Icons.star_rounded,
-                      label:
-                          '${p.rating.toStringAsFixed(1)} • ${p.reviews} avis',
+                      label: '${p.rating.toStringAsFixed(1)} • ${p.reviews} avis',
                       color: kAccentColor,
                     ),
                   ],
@@ -991,10 +1000,13 @@ class _HelpBanner extends StatelessWidget {
           ],
         );
 
-        final actions = Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
+        // ✅ Actions RESPONSIVE (corrige le RIGHT overflow)
+        final actions = LayoutBuilder(
+          builder: (context, c2) {
+            final narrow = c2.maxWidth < 420;
+
+            final become = SizedBox(
+              width: double.infinity,
               height: 44,
               child: OutlinedButton.icon(
                 onPressed: onBecome,
@@ -1002,6 +1014,8 @@ class _HelpBanner extends StatelessWidget {
                     size: 18, color: kPrimaryColor),
                 label: Text(
                   'Devenir précepteur',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: kPrimaryColor,
                     fontWeight: FontWeight.w900,
@@ -1015,16 +1029,32 @@ class _HelpBanner extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
               ),
-            ),
-            const SizedBox(width: 10),
-            SizedBox(
+            );
+
+            final contact = SizedBox(
+              width: double.infinity,
               height: 44,
-              child: CtaButton(
-                label: 'Contact',
-                onPressed: onContact,
-              ),
-            ),
-          ],
+              child: CtaButton(label: 'Contact', onPressed: onContact),
+            );
+
+            if (narrow) {
+              return Column(
+                children: [
+                  become,
+                  const SizedBox(height: 10),
+                  contact,
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(child: become),
+                const SizedBox(width: 10),
+                Expanded(child: contact),
+              ],
+            );
+          },
         );
 
         if (compact) {
@@ -1033,7 +1063,7 @@ class _HelpBanner extends StatelessWidget {
             children: [
               leading,
               const SizedBox(height: 12),
-              SizedBox(width: double.infinity, child: actions),
+              actions,
             ],
           );
         }
@@ -1042,7 +1072,7 @@ class _HelpBanner extends StatelessWidget {
           children: [
             Expanded(child: leading),
             const SizedBox(width: 12),
-            actions,
+            SizedBox(width: 360, child: actions),
           ],
         );
       }),

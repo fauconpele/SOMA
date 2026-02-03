@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../widgets/common/simple_page_scaffold.dart';
 import '../widgets/common/scroll_to_top_bottom.dart';
 import '../core/constants.dart';
@@ -60,7 +61,7 @@ class _AboutContent extends StatelessWidget {
         ),
         const SizedBox(height: 18),
 
-        // ✅ NOUVEAU : Bouton vers Contact (bien visible)
+        // ✅ Responsive : évite RIGHT overflow
         _ContactCtaRow(onGoContact: onGoContact),
         const SizedBox(height: 18),
 
@@ -133,6 +134,7 @@ class _AboutContent extends StatelessWidget {
         ),
         const SizedBox(height: 18),
 
+        // ✅ Responsive aussi
         _BigIdentityCard(isSmall: isSmall),
         const SizedBox(height: 18),
 
@@ -149,6 +151,7 @@ class _AboutContent extends StatelessWidget {
         ),
         const SizedBox(height: 22),
 
+        // ✅ Responsive : évite RIGHT overflow
         _CtaBox(onGoContact: onGoContact),
         const SizedBox(height: 24),
       ],
@@ -156,27 +159,17 @@ class _AboutContent extends StatelessWidget {
   }
 }
 
-// ✅ CTA principal vers Contact
+// ✅ CTA principal vers Contact (responsive)
 class _ContactCtaRow extends StatelessWidget {
   final VoidCallback onGoContact;
   const _ContactCtaRow({required this.onGoContact});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: kDarkColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-            color: Colors.black.withOpacity(0.12),
-          ),
-        ],
-      ),
-      child: Row(
+    return LayoutBuilder(builder: (context, c) {
+      final compact = c.maxWidth < 560;
+
+      final leading = Row(
         children: [
           Container(
             width: 44,
@@ -199,27 +192,62 @@ class _ContactCtaRow extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: onGoContact,
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              backgroundColor: kSecondaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              textStyle: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            child: const Text('Contact'),
-          ),
         ],
-      ),
-    );
+      );
+
+      final btn = SizedBox(
+        height: 44,
+        width: compact ? double.infinity : null,
+        child: ElevatedButton(
+          onPressed: onGoContact,
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor: kSecondaryColor,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          child: const Text('Contact'),
+        ),
+      );
+
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: kDarkColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(0.12),
+            ),
+          ],
+        ),
+        child: compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  leading,
+                  const SizedBox(height: 12),
+                  btn,
+                ],
+              )
+            : Row(
+                children: [
+                  Expanded(child: leading),
+                  const SizedBox(width: 12),
+                  btn,
+                ],
+              ),
+      );
+    });
   }
 }
 
@@ -398,97 +426,102 @@ class _BigIdentityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: kPrimaryColor,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-            color: kPrimaryColor.withOpacity(0.25),
-          ),
-        ],
-      ),
-      child: Row(
+    return LayoutBuilder(builder: (context, c) {
+      final compact = c.maxWidth < 520;
+
+      final iconBox = Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.14),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.verified, color: Colors.white, size: 28),
+      );
+
+      final text = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.14),
-              borderRadius: BorderRadius.circular(16),
+          Text(
+            'Notre identité',
+            style: GoogleFonts.inter(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
             ),
-            child: const Icon(Icons.verified, color: Colors.white, size: 28),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Notre identité',
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'SOMA n’est pas simplement un centre de formation. C’est un partenaire de réussite : '
-                  'un espace où l’on reprend confiance, où l’on apprend à apprendre, et où l’on construit '
-                  'des compétences solides et durables.',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    height: 1.7,
-                    color: Colors.white.withOpacity(0.95),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Discipline • Excellence • Accompagnement humain',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    height: 1.5,
-                    color: Colors.white.withOpacity(0.9),
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 12),
+          Text(
+            'SOMA n’est pas simplement un centre de formation. C’est un partenaire de réussite : '
+            'un espace où l’on reprend confiance, où l’on apprend à apprendre, et où l’on construit '
+            'des compétences solides et durables.',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              height: 1.7,
+              color: Colors.white.withOpacity(0.95),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Discipline • Excellence • Accompagnement humain',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              height: 1.5,
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1,
             ),
           ),
         ],
-      ),
-    );
+      );
+
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: kPrimaryColor,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+              color: kPrimaryColor.withOpacity(0.25),
+            ),
+          ],
+        ),
+        child: compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  iconBox,
+                  const SizedBox(height: 14),
+                  text,
+                ],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  iconBox,
+                  const SizedBox(width: 14),
+                  Expanded(child: text),
+                ],
+              ),
+      );
+    });
   }
 }
 
+// ✅ CTA final (responsive)
 class _CtaBox extends StatelessWidget {
   final VoidCallback onGoContact;
   const _CtaBox({required this.onGoContact});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            kPrimaryColor.withOpacity(0.10),
-            kSecondaryColor.withOpacity(0.10),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: kPrimaryColor.withOpacity(0.15)),
-      ),
-      child: Row(
+    return LayoutBuilder(builder: (context, c) {
+      final compact = c.maxWidth < 600;
+
+      final leading = Row(
         children: [
           Container(
             width: 44,
@@ -511,26 +544,62 @@ class _CtaBox extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          ElevatedButton(
-            onPressed: onGoContact,
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              backgroundColor: kPrimaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              textStyle: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            child: const Text('Nous contacter'),
-          ),
         ],
-      ),
-    );
+      );
+
+      final btn = SizedBox(
+        height: 44,
+        width: compact ? double.infinity : null,
+        child: ElevatedButton(
+          onPressed: onGoContact,
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor: kPrimaryColor,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          child: const Text('Nous contacter'),
+        ),
+      );
+
+      return Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              kPrimaryColor.withOpacity(0.10),
+              kSecondaryColor.withOpacity(0.10),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: kPrimaryColor.withOpacity(0.15)),
+        ),
+        child: compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  leading,
+                  const SizedBox(height: 12),
+                  btn,
+                ],
+              )
+            : Row(
+                children: [
+                  Expanded(child: leading),
+                  const SizedBox(width: 12),
+                  btn,
+                ],
+              ),
+      );
+    });
   }
 }

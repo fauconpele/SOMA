@@ -79,9 +79,8 @@ class _BlogPageState extends State<BlogPage> {
 
     final q = _query.trim().toLowerCase();
     final filtered = _posts.where((p) {
-      final matchesQuery = q.isEmpty ||
-          p.title.toLowerCase().contains(q) ||
-          p.excerpt.toLowerCase().contains(q);
+      final matchesQuery =
+          q.isEmpty || p.title.toLowerCase().contains(q) || p.excerpt.toLowerCase().contains(q);
       final matchesCategory = _category == "Tous" || p.category == _category;
       return matchesQuery && matchesCategory;
     }).toList();
@@ -114,6 +113,23 @@ class _BlogPageState extends State<BlogPage> {
                 final w = c.maxWidth;
                 final crossAxisCount = w > 980 ? 3 : (w > 650 ? 2 : 1);
 
+                // ✅ Mobile (1 colonne) => LISTE (flexible) : supprime les overflows
+                if (crossAxisCount == 1) {
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    itemBuilder: (_, i) => _BlogCard(
+                      post: filtered[i],
+                      onTap: () => _openArticle(context, filtered[i]),
+                    ),
+                  );
+                }
+
+                // ✅ Tablette/Web => GRID (hauteur maîtrisée)
+                final extent = crossAxisCount == 2 ? 350.0 : 340.0;
+
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -122,7 +138,7 @@ class _BlogPageState extends State<BlogPage> {
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 14,
                     mainAxisSpacing: 14,
-                    childAspectRatio: crossAxisCount == 1 ? 1.20 : 0.82,
+                    mainAxisExtent: extent, // ✅ évite les bandes jaunes/noires
                   ),
                   itemBuilder: (_, i) => _BlogCard(
                     post: filtered[i],
@@ -134,73 +150,10 @@ class _BlogPageState extends State<BlogPage> {
 
           const SizedBox(height: 20),
 
-          // CTA
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  kPrimaryColor.withOpacity(0.10),
-                  kSecondaryColor.withOpacity(0.10),
-                ],
-              ),
-              border: Border.all(color: kPrimaryColor.withOpacity(0.18)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: kPrimaryColor.withOpacity(0.22)),
-                  ),
-                  child: Icon(Icons.support_agent_rounded, color: kPrimaryColor),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    "Besoin d’un accompagnement ? Contactez SOMA ou découvrez nos précepteurs.",
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: kDarkColor,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton(
-                  onPressed: () => Navigator.pushNamed(context, "/nos-precepteurs"),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: kPrimaryColor,
-                    side: BorderSide(color: kPrimaryColor.withOpacity(0.35)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    textStyle: GoogleFonts.inter(fontWeight: FontWeight.w900),
-                  ),
-                  child: const Text("Précepteurs"),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, "/contact"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kSecondaryColor,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    textStyle: GoogleFonts.inter(fontWeight: FontWeight.w900),
-                  ),
-                  child: const Text("Contact"),
-                ),
-              ],
-            ),
+          // ✅ CTA responsive (corrige les RIGHT overflow sur petits écrans)
+          _BottomCta(
+            onPrecepteurs: () => Navigator.pushNamed(context, "/nos-precepteurs"),
+            onContact: () => Navigator.pushNamed(context, "/contact"),
           ),
         ],
       ),
@@ -220,7 +173,6 @@ class _BlogPageState extends State<BlogPage> {
           height: MediaQuery.of(context).size.height * 0.92,
           child: Column(
             children: [
-              // Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
                 child: Row(
@@ -494,12 +446,13 @@ class _BlogCard extends StatelessWidget {
             ],
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min, // ✅ important : flexible en ListView
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: SizedBox(
-                  height: 160,
+                child: AspectRatio(
+                  aspectRatio: 16 / 10,
                   child: Image.asset(
                     post.imageAsset,
                     fit: BoxFit.cover,
@@ -512,76 +465,209 @@ class _BlogCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _Chip(text: post.category, primary: true),
-                          _Chip(text: post.date),
-                        ],
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _Chip(text: post.category, primary: true),
+                        _Chip(text: post.date),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      post.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w900,
+                        color: kDarkColor,
+                        height: 1.25,
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        post.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w900,
-                          color: kDarkColor,
-                          height: 1.25,
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      post.excerpt,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        height: 1.55,
+                        fontWeight: FontWeight.w600,
+                        color: kDarkColor.withOpacity(0.75),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        post.excerpt,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 13.5,
-                          height: 1.55,
-                          fontWeight: FontWeight.w600,
-                          color: kDarkColor.withOpacity(0.75),
-                        ),
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Text(
-                            "Lire",
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              color: kPrimaryColor,
-                            ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text(
+                          "Lire",
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: kPrimaryColor,
                           ),
-                          const SizedBox(width: 6),
-                          Icon(Icons.arrow_forward_rounded, size: 18, color: kPrimaryColor),
-                          const Spacer(),
-                          Text(
-                            post.readTime,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: kTextLight,
-                            ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.arrow_forward_rounded, size: 18, color: kPrimaryColor),
+                        const Spacer(),
+                        Text(
+                          post.readTime,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: kTextLight,
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BottomCta extends StatelessWidget {
+  const _BottomCta({
+    required this.onPrecepteurs,
+    required this.onContact,
+  });
+
+  final VoidCallback onPrecepteurs;
+  final VoidCallback onContact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            kPrimaryColor.withOpacity(0.10),
+            kSecondaryColor.withOpacity(0.10),
+          ],
+        ),
+        border: Border.all(color: kPrimaryColor.withOpacity(0.18)),
+      ),
+      child: LayoutBuilder(builder: (context, c) {
+        final compact = c.maxWidth < 640;
+
+        final leading = Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: kPrimaryColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: kPrimaryColor.withOpacity(0.22)),
+              ),
+              child: Icon(Icons.support_agent_rounded, color: kPrimaryColor),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "Besoin d’un accompagnement ? Contactez SOMA ou découvrez nos précepteurs.",
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: kDarkColor,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ],
+        );
+
+        final buttons = LayoutBuilder(builder: (context, c2) {
+          final narrow = c2.maxWidth < 420;
+
+          final precepteurs = SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: OutlinedButton(
+              onPressed: onPrecepteurs,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: kPrimaryColor,
+                side: BorderSide(color: kPrimaryColor.withOpacity(0.35)),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                textStyle: GoogleFonts.inter(fontWeight: FontWeight.w900),
+              ),
+              child: const Text("Précepteurs"),
+            ),
+          );
+
+          final contact = SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: onContact,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kSecondaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                textStyle: GoogleFonts.inter(fontWeight: FontWeight.w900),
+              ),
+              child: const Text("Contact"),
+            ),
+          );
+
+          if (narrow) {
+            return Column(
+              children: [
+                precepteurs,
+                const SizedBox(height: 10),
+                contact,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(child: precepteurs),
+              const SizedBox(width: 10),
+              Expanded(child: contact),
+            ],
+          );
+        });
+
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              leading,
+              const SizedBox(height: 12),
+              buttons,
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: leading),
+            const SizedBox(width: 12),
+            SizedBox(width: 340, child: buttons),
+          ],
+        );
+      }),
     );
   }
 }

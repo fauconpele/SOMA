@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+// lib/main.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
-
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -14,18 +15,31 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // IMPORTANT: à faire avant toute lecture/écriture Firestore
+  // ✅ DEBUG: vérifier que tu es sur le BON projet Firebase
+  final app = Firebase.app();
+  debugPrint('Firebase projectId = ${app.options.projectId}');
+  debugPrint('Firebase appId     = ${app.options.appId}');
+
+  final fs = FirebaseFirestore.instance;
+
+  // ✅ Au cas où le réseau Firestore aurait été désactivé quelque part
+  try {
+    await fs.enableNetwork();
+  } catch (_) {}
+
+  // ✅ IMPORTANT: settings AVANT toute requête Firestore
+  // (Sur web, long polling aide beaucoup quand Firestore est "offline" derrière certains réseaux)
   if (kIsWeb) {
-    FirebaseFirestore.instance.settings = const Settings(
+    fs.settings = const Settings(
       persistenceEnabled: true,
-
-      // ✅ Remplace experimentalForceLongPolling (ancien)
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
       webExperimentalForceLongPolling: true,
-
-      // Optionnel mais utile: règles du long-polling (timeout)
-      webExperimentalLongPollingOptions: WebExperimentalLongPollingOptions(
-        timeoutDuration: Duration(seconds: 30),
-      ),
+      webExperimentalAutoDetectLongPolling: true,
+    );
+  } else {
+    fs.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
     );
   }
 

@@ -47,7 +47,8 @@ class SomaApp extends StatelessWidget {
         '/students': (_) => AuthGuard(child: const StudentListPage()),
         '/students/add': (_) => AuthGuard(child: const AddStudentPage()),
       },
-      onUnknownRoute: (_) => MaterialPageRoute(builder: (_) => const NotFoundPage()),
+      onUnknownRoute: (_) =>
+          MaterialPageRoute(builder: (_) => const NotFoundPage()),
     );
   }
 }

@@ -1,116 +1,224 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../core/constants.dart';
-import '../common/section_base.dart';
 
 class TestimonialsSection extends StatelessWidget {
   const TestimonialsSection({super.key});
 
-  static const testimonials = [
-    Testimonial(
-      'Destin Nguomoja',
-      'Parent',
-      'Grâce à SOMA, j\'ai trouvé un précepteur sérieux pour mon enfant. Le suivi est clair, la communication est fluide et les résultats scolaires se sont nettement améliorés.',
-    ),
-    Testimonial(
-      'Moïse Muzalia',
-      'Parent',
-      'SOMA m\'a rassuré en tant que parent. Les précepteurs sont bien encadrés et je peux suivre l\'évolution de mon enfant.',
-    ),
-    Testimonial(
-      'Joël Makana',
-      'Parent',
-      'Avant SOMA, il était difficile de trouver un bon répétiteur. Aujourd\'hui, mon enfant est bien encadré et motivé.',
-    ),
-  ];
+  @override
+  Widget build(BuildContext context) {
+    final items = _items;
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 44),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1100),
+          child: LayoutBuilder(
+            builder: (context, c) {
+              final w = c.maxWidth;
+              final cols = w < 720 ? 1 : (w < 1050 ? 2 : 3);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "TÉMOIGNAGES",
+                    style: GoogleFonts.inter(
+                      letterSpacing: 2,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: kTextLight,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "Ce que disent les parents\naccompagnés par SOMA",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: w < 720 ? 28 : 36,
+                      height: 1.1,
+                      fontWeight: FontWeight.w900,
+                      color: kDarkColor,
+                    ),
+                  ),
+                  const SizedBox(height: 26),
+
+                  // ✅ Wrap responsive (pas de hauteur fixe => pas d’overflow)
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      for (final t in items)
+                        SizedBox(
+                          width: _cardWidth(w, cols),
+                          child: _TestimonialCard(t: t),
+                        ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  double _cardWidth(double maxWidth, int cols) {
+    if (cols <= 1) return maxWidth; // mobile
+    const gap = 16.0;
+    return (maxWidth - gap * (cols - 1)) / cols;
+    // Ex: 2 cols => (W - 16)/2 ; 3 cols => (W - 32)/3
+  }
+}
+
+class _Testimonial {
+  final String quote;
+  final String name;
+  final String? subtitle;
+  final int stars;
+
+  const _Testimonial({
+    required this.quote,
+    required this.name,
+    this.subtitle,
+    this.stars = 5,
+  });
+}
+
+const _items = <_Testimonial>[
+  _Testimonial(
+    quote:
+        "Grâce à SOMA, j'ai trouvé un précepteur sérieux pour mon enfant. "
+        "Le suivi est clair, la communication est fluide et les résultats scolaires "
+        "se sont nettement améliorés.",
+    name: "Destin Nquomoia", // noms longs OK (ellipsis)
+    subtitle: "Parent",
+    stars: 5,
+  ),
+  _Testimonial(
+    quote:
+        "L’application est simple à utiliser et l’accompagnement est rassurant. "
+        "On se sent suivi et les cours sont bien structurés.",
+    name: "Marie K.",
+    subtitle: "Parent",
+    stars: 5,
+  ),
+  _Testimonial(
+    quote:
+        "Très bonne expérience. Le précepteur est ponctuel et les progrès sont visibles. "
+        "Je recommande pour les parents qui veulent un vrai suivi.",
+    name: "Jean-Claude M.",
+    subtitle: "Parent",
+    stars: 5,
+  ),
+];
+
+class _TestimonialCard extends StatelessWidget {
+  final _Testimonial t;
+  const _TestimonialCard({required this.t});
 
   @override
   Widget build(BuildContext context) {
-    return SectionBase(
-      background: Colors.white,
-      child: Column(
-        children: [
-          Text('TÉMOIGNAGES',
-              style: GoogleFonts.inter(color: kPrimaryColor, fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 2)),
-          const SizedBox(height: 16),
-          Text('Ce que disent les parents accompagnés par SOMA',
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: Colors.grey.shade200, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // ✅ important : pas de hauteur imposée
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _StarsRow(stars: t.stars),
+            const SizedBox(height: 12),
+
+            // ✅ Quote flexible (aucune contrainte fixe)
+            Text(
+              "“${t.quote}”",
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 34, fontWeight: FontWeight.w900, color: kDarkColor, height: 1.2)),
-          const SizedBox(height: 40),
-          SizedBox(
-            height: 360,
-            child: PageView.builder(
-              itemCount: testimonials.length,
-              itemBuilder: (_, i) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: TestimonialCard(testimonial: testimonials[i]),
+              style: GoogleFonts.inter(
+                height: 1.55,
+                fontSize: 14,
+                color: kTextLight,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 14),
+
+            // ✅ Ligne auteur : texte flexible (évite overflow horizontal/vertical)
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: kPrimaryColor.withOpacity(0.12),
+                  child: Icon(Icons.person, color: kPrimaryColor),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        t.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis, // ✅ anti overflow
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w900,
+                          color: kDarkColor,
+                        ),
+                      ),
+                      if ((t.subtitle ?? '').trim().isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          t.subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            color: kTextLight,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class Testimonial {
-  final String name;
-  final String role;
-  final String text;
-  const Testimonial(this.name, this.role, this.text);
-}
-
-class TestimonialCard extends StatelessWidget {
-  final Testimonial testimonial;
-  const TestimonialCard({super.key, required this.testimonial});
+class _StarsRow extends StatelessWidget {
+  final int stars;
+  const _StarsRow({required this.stars});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(34),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 30, offset: const Offset(0, 10))],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.star, color: kAccentColor, size: 26),
-              Icon(Icons.star, color: kAccentColor, size: 26),
-              Icon(Icons.star, color: kAccentColor, size: 26),
-              Icon(Icons.star, color: kAccentColor, size: 26),
-              Icon(Icons.star, color: kAccentColor, size: 26),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Text('“${testimonial.text}”',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 16, color: kTextDark, fontStyle: FontStyle.italic, height: 1.7)),
-          const SizedBox(height: 26),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: kPrimaryColor.withOpacity(0.10)),
-                child: const Icon(Icons.person, size: 28, color: kPrimaryColor),
-              ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(testimonial.name, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w900, color: kDarkColor)),
-                  Text(testimonial.role, style: GoogleFonts.inter(fontSize: 13, color: kTextLight)),
-                ],
-              ),
-            ],
-          ),
-        ],
+    final s = stars.clamp(0, 5);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        5,
+        (i) => Icon(
+          i < s ? Icons.star_rounded : Icons.star_border_rounded,
+          size: 18,
+          color: Colors.amber.shade700,
+        ),
       ),
     );
   }

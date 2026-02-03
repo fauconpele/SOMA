@@ -25,6 +25,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
+
   bool _showTop = false;
   bool _showBottom = false;
 
@@ -84,8 +85,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final small = isSmallScreen(context);
+    final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
+      backgroundColor: kLightColor,
       appBar: AppBar(
         backgroundColor: kDarkColor,
         foregroundColor: Colors.white,
@@ -93,17 +96,25 @@ class _HomePageState extends State<HomePage> {
         title: const BrandMark(textColor: Colors.white, logoHeight: 28),
         actions: [
           if (!small) ...[
-            TopNavLink(label: 'Services', onTap: () => Navigator.pushNamed(context, '/services')),
-            TopNavLink(label: 'Blog', onTap: () => Navigator.pushNamed(context, '/blog')),
-            TopNavLink(label: 'À propos', onTap: () => Navigator.pushNamed(context, '/about')),
-            TopNavLink(label: 'Contact', onTap: () => Navigator.pushNamed(context, '/contact')),
+            TopNavLink(
+              label: 'Services',
+              onTap: () => Navigator.pushNamed(context, '/services'),
+            ),
+            TopNavLink(
+              label: 'Blog',
+              onTap: () => Navigator.pushNamed(context, '/blog'),
+            ),
+            TopNavLink(
+              label: 'À propos',
+              onTap: () => Navigator.pushNamed(context, '/about'),
+            ),
+            TopNavLink(
+              label: 'Contact',
+              onTap: () => Navigator.pushNamed(context, '/contact'),
+            ),
             const SizedBox(width: 8),
-
-            // ✅ Connexion / Inscription (ou Dashboard / Déconnexion si connecté)
             const _AuthTopActions(),
-
             const SizedBox(width: 10),
-
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               child: CtaButton(
@@ -129,26 +140,28 @@ class _HomePageState extends State<HomePage> {
               child: SingleChildScrollView(
                 controller: _scrollController,
                 physics: const BouncingScrollPhysics(),
-                child: const Column(
+                child: Column(
                   children: [
-                    HeroSection(),
-                    AboutSection(),
-                    ServicesHomeSection(),
-                    WhySection(),
-                    TeamSection(),
-                    TestimonialsSection(),
-                    CtaSection(),
-                    FooterSection(),
-                    SizedBox(height: 80),
+                    const HeroSection(),
+                    const AboutSection(),
+                    const ServicesHomeSection(),
+                    const WhySection(),
+                    const TeamSection(),
+                    const TestimonialsSection(),
+                    const CtaSection(),
+                    const FooterSection(),
+
+                    // espace final (évite que les FAB masquent le footer)
+                    const SizedBox(height: 120),
                   ],
                 ),
               ),
             ),
 
-            // ✅ Boutons haut/bas
+            // Boutons haut/bas (avec padding système)
             Positioned(
               right: 16,
-              bottom: 16,
+              bottom: 16 + bottomPad,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -185,7 +198,6 @@ class _AuthTopActions extends StatelessWidget {
       builder: (context, snap) {
         final user = snap.data;
 
-        // Pas connecté -> Connexion + Inscription
         if (user == null) {
           return Row(
             children: [
@@ -195,7 +207,10 @@ class _AuthTopActions extends StatelessWidget {
                   foregroundColor: Colors.white.withOpacity(0.92),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
-                child: const Text('Connexion', style: TextStyle(fontWeight: FontWeight.w700)),
+                child: const Text(
+                  'Connexion',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
               const SizedBox(width: 8),
               SizedBox(
@@ -205,16 +220,20 @@ class _AuthTopActions extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: BorderSide(color: Colors.white.withOpacity(0.28)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('Inscription', style: TextStyle(fontWeight: FontWeight.w800)),
+                  child: const Text(
+                    'Inscription',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
             ],
           );
         }
 
-        // Connecté -> Dashboard + Déconnexion
         return Row(
           children: [
             TextButton(
@@ -223,7 +242,10 @@ class _AuthTopActions extends StatelessWidget {
                 foregroundColor: Colors.white.withOpacity(0.92),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
-              child: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.w800)),
+              child: const Text(
+                'Dashboard',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
             ),
             IconButton(
               tooltip: 'Déconnexion',
@@ -275,7 +297,10 @@ class _ScrollFab extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: kDarkColor,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.12),
+                    width: 1,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.18),

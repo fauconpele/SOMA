@@ -137,13 +137,11 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
             },
           ),
           const SizedBox(height: 18),
-
           _BecomePrecepteurBanner(
             radius: r,
             onBecome: () => Navigator.pushNamed(context, '/devenir-precepteur'),
           ),
           const SizedBox(height: 16),
-
           Row(
             children: [
               Text(
@@ -168,13 +166,12 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
           ),
           const SizedBox(height: 12),
 
-          // ✅ IMPORTANT : Mobile => LISTE (flexible), sinon GRID
+          // ✅ Mobile => LISTE, Web => GRID (hauteur fixe safe)
           LayoutBuilder(builder: (context, c) {
             final w = c.maxWidth;
             final crossCount = w > 1000 ? 3 : (w > 650 ? 2 : 1);
 
             if (crossCount == 1) {
-              // ✅ ListView : hauteur libre, plus de bandes jaunes/noires
               return ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -188,17 +185,20 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
               );
             }
 
-            // ✅ Grid pour tablette / web
+            // ✅ IMPORTANT : sur Web le texte est parfois légèrement + haut
+            // => mainAxisExtent (hauteur fixe) supprime définitivement les bandes
+            final extent = crossCount == 2 ? 470.0 : 460.0;
+
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
+              itemCount: list.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossCount,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.88,
+                mainAxisExtent: extent,
               ),
-              itemCount: list.length,
               itemBuilder: (_, i) => _PrecepteurCard(
                 p: list[i],
                 radius: r,
@@ -264,7 +264,6 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                     ],
                   ),
                 ),
-
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(18),
@@ -273,7 +272,6 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                       children: [
                         _ProfileHero(p: p, radius: r),
                         const SizedBox(height: 16),
-
                         Text(
                           'À propos',
                           style: GoogleFonts.inter(
@@ -291,14 +289,12 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                             color: kTextDark,
                           ),
                         ),
-
                         const SizedBox(height: 16),
                         _InfoRow(icon: Icons.location_on_rounded, text: p.city),
                         const SizedBox(height: 10),
                         _InfoRow(icon: Icons.school_rounded, text: p.levels.join(' • ')),
                         const SizedBox(height: 10),
                         _InfoRow(icon: Icons.video_call_rounded, text: p.formats.join(' • ')),
-
                         const SizedBox(height: 18),
                         Container(
                           width: double.infinity,
@@ -331,7 +327,6 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
                     ),
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
                   child: Row(
@@ -391,6 +386,8 @@ class _NosPrecepteursPageState extends State<NosPrecepteursPage> {
   }
 }
 
+// ======================= MODEL =======================
+
 class _Precepteur {
   final String name;
   final String title;
@@ -416,6 +413,8 @@ class _Precepteur {
     this.avatarAsset,
   });
 }
+
+// ======================= FILTERS =======================
 
 class _FiltersCard extends StatelessWidget {
   const _FiltersCard({
@@ -482,7 +481,6 @@ class _FiltersCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-
           LayoutBuilder(builder: (context, c) {
             final wide = c.maxWidth > 720;
 
@@ -546,6 +544,8 @@ class _FiltersCard extends StatelessWidget {
     );
   }
 }
+
+// ======================= BANNERS =======================
 
 class _BecomePrecepteurBanner extends StatelessWidget {
   const _BecomePrecepteurBanner({required this.radius, required this.onBecome});
@@ -650,6 +650,8 @@ class _BecomePrecepteurBanner extends StatelessWidget {
   }
 }
 
+// ======================= CARD =======================
+
 class _PrecepteurCard extends StatelessWidget {
   const _PrecepteurCard({
     required this.p,
@@ -684,7 +686,7 @@ class _PrecepteurCard extends StatelessWidget {
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // ✅ flexible en LISTE mobile
+            mainAxisSize: MainAxisSize.max, // ✅ important en Grid (Web)
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
@@ -719,9 +721,7 @@ class _PrecepteurCard extends StatelessWidget {
                       left: 12,
                       top: 12,
                       child: _PillBadge(
-                        icon: p.verified
-                            ? Icons.verified_rounded
-                            : Icons.info_outline_rounded,
+                        icon: p.verified ? Icons.verified_rounded : Icons.info_outline_rounded,
                         label: p.verified ? 'Vérifié' : 'Profil',
                         color: badgeColor,
                       ),
@@ -730,111 +730,109 @@ class _PrecepteurCard extends StatelessWidget {
                 ),
               ),
 
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      p.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: kDarkColor,
+              // ✅ Zone texte "anti-overflow" (prend l’espace restant)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        p.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: kDarkColor,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      p.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                        color: kTextLight,
-                        height: 1.35,
+                      const SizedBox(height: 6),
+                      Text(
+                        p.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: kTextLight,
+                          height: 1.35,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
+                      const SizedBox(height: 10),
 
-                    Row(
-                      children: [
-                        Icon(Icons.location_on_rounded,
-                            size: 16, color: kTextLight),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            p.city,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: kTextLight,
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_rounded, size: 16, color: kTextLight),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              p.city,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: kTextLight,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 6,
-                            runSpacing: 6,
-                            children: [
-                              Icon(Icons.star_rounded,
-                                  size: 18, color: kAccentColor),
-                              Text(
-                                p.rating.toStringAsFixed(1),
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w900,
-                                  color: kDarkColor,
-                                  fontSize: 13,
-                                ),
+                      // ✅ rating row compact (évite Wrap multi-ligne sur Web)
+                      Row(
+                        children: [
+                          Icon(Icons.star_rounded, size: 18, color: kAccentColor),
+                          const SizedBox(width: 6),
+                          Text(
+                            p.rating.toStringAsFixed(1),
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w900,
+                              color: kDarkColor,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              '(${p.reviews} avis)',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w700,
+                                color: kTextLight,
+                                fontSize: 12.5,
                               ),
-                              Text(
-                                '(${p.reviews} avis)',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w700,
-                                  color: kTextLight,
-                                  fontSize: 12.5,
-                                ),
-                              ),
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right_rounded, color: kTextLight),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // ✅ Chips sur 1 ligne (scroll horizontal) => jamais de 2e ligne => jamais d’overflow
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            for (final f in p.formats.take(2)) ...[
+                              _ChipMini(text: f, color: kPrimaryColor.withOpacity(0.12)),
+                              const SizedBox(width: 8),
                             ],
-                          ),
+                            for (final l in p.levels.take(1)) ...[
+                              _ChipMini(text: l, color: kSecondaryColor.withOpacity(0.12)),
+                              const SizedBox(width: 8),
+                            ],
+                          ],
                         ),
-                        const Icon(Icons.chevron_right_rounded, color: kTextLight),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final f in p.formats.take(2))
-                          _ChipMini(
-                            text: f,
-                            color: kPrimaryColor.withOpacity(0.12),
-                          ),
-                        for (final l in p.levels.take(1))
-                          _ChipMini(
-                            text: l,
-                            color: kSecondaryColor.withOpacity(0.12),
-                          ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -844,6 +842,8 @@ class _PrecepteurCard extends StatelessWidget {
     );
   }
 }
+
+// ======================= PROFILE HERO =======================
 
 class _ProfileHero extends StatelessWidget {
   const _ProfileHero({required this.p, required this.radius});
@@ -921,7 +921,7 @@ class _ProfileHero extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     if (p.verified)
-                      _PillBadge(
+                      const _PillBadge(
                         icon: Icons.verified_rounded,
                         label: 'Vérifié',
                         color: kSecondaryColor,
@@ -941,6 +941,8 @@ class _ProfileHero extends StatelessWidget {
     );
   }
 }
+
+// ======================= HELP BANNER =======================
 
 class _HelpBanner extends StatelessWidget {
   const _HelpBanner({
@@ -1000,62 +1002,58 @@ class _HelpBanner extends StatelessWidget {
           ],
         );
 
-        // ✅ Actions RESPONSIVE (corrige le RIGHT overflow)
-        final actions = LayoutBuilder(
-          builder: (context, c2) {
-            final narrow = c2.maxWidth < 420;
+        final actions = LayoutBuilder(builder: (context, c2) {
+          final narrow = c2.maxWidth < 420;
 
-            final become = SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: OutlinedButton.icon(
-                onPressed: onBecome,
-                icon: Icon(Icons.person_add_alt_1_rounded,
-                    size: 18, color: kPrimaryColor),
-                label: Text(
-                  'Devenir précepteur',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    color: kPrimaryColor,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: kPrimaryColor.withOpacity(0.45)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+          final become = SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: OutlinedButton.icon(
+              onPressed: onBecome,
+              icon: Icon(Icons.person_add_alt_1_rounded, size: 18, color: kPrimaryColor),
+              label: Text(
+                'Devenir précepteur',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  color: kPrimaryColor,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
-            );
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: kPrimaryColor.withOpacity(0.45)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ),
+            ),
+          );
 
-            final contact = SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: CtaButton(label: 'Contact', onPressed: onContact),
-            );
+          final contact = SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: CtaButton(label: 'Contact', onPressed: onContact),
+          );
 
-            if (narrow) {
-              return Column(
-                children: [
-                  become,
-                  const SizedBox(height: 10),
-                  contact,
-                ],
-              );
-            }
-
-            return Row(
+          if (narrow) {
+            return Column(
               children: [
-                Expanded(child: become),
-                const SizedBox(width: 10),
-                Expanded(child: contact),
+                become,
+                const SizedBox(height: 10),
+                contact,
               ],
             );
-          },
-        );
+          }
+
+          return Row(
+            children: [
+              Expanded(child: become),
+              const SizedBox(width: 10),
+              Expanded(child: contact),
+            ],
+          );
+        });
 
         if (compact) {
           return Column(
@@ -1079,6 +1077,8 @@ class _HelpBanner extends StatelessWidget {
     );
   }
 }
+
+// ======================= SMALL WIDGETS =======================
 
 class _CoverFallback extends StatelessWidget {
   const _CoverFallback({required this.name});

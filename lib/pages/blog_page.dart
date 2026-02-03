@@ -79,8 +79,9 @@ class _BlogPageState extends State<BlogPage> {
 
     final q = _query.trim().toLowerCase();
     final filtered = _posts.where((p) {
-      final matchesQuery =
-          q.isEmpty || p.title.toLowerCase().contains(q) || p.excerpt.toLowerCase().contains(q);
+      final matchesQuery = q.isEmpty ||
+          p.title.toLowerCase().contains(q) ||
+          p.excerpt.toLowerCase().contains(q);
       final matchesCategory = _category == "Tous" || p.category == _category;
       return matchesQuery && matchesCategory;
     }).toList();
@@ -113,7 +114,7 @@ class _BlogPageState extends State<BlogPage> {
                 final w = c.maxWidth;
                 final crossAxisCount = w > 980 ? 3 : (w > 650 ? 2 : 1);
 
-                // ✅ Mobile (1 colonne) => LISTE (flexible) : supprime les overflows
+                // ✅ Mobile => LISTE (hauteur libre)
                 if (crossAxisCount == 1) {
                   return ListView.separated(
                     shrinkWrap: true,
@@ -127,8 +128,9 @@ class _BlogPageState extends State<BlogPage> {
                   );
                 }
 
-                // ✅ Tablette/Web => GRID (hauteur maîtrisée)
-                final extent = crossAxisCount == 2 ? 350.0 : 340.0;
+                // ✅ Web/Tablet => GRID : hauteur plus grande (safe) pour éliminer l’overflow
+                // Le Web rend parfois le texte légèrement plus "haut" => marge confortable.
+                final extent = crossAxisCount == 2 ? 480.0 : 470.0;
 
                 return GridView.builder(
                   shrinkWrap: true,
@@ -138,7 +140,7 @@ class _BlogPageState extends State<BlogPage> {
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 14,
                     mainAxisSpacing: 14,
-                    mainAxisExtent: extent, // ✅ évite les bandes jaunes/noires
+                    mainAxisExtent: extent,
                   ),
                   itemBuilder: (_, i) => _BlogCard(
                     post: filtered[i],
@@ -150,7 +152,6 @@ class _BlogPageState extends State<BlogPage> {
 
           const SizedBox(height: 20),
 
-          // ✅ CTA responsive (corrige les RIGHT overflow sur petits écrans)
           _BottomCta(
             onPrecepteurs: () => Navigator.pushNamed(context, "/nos-precepteurs"),
             onContact: () => Navigator.pushNamed(context, "/contact"),
@@ -446,7 +447,7 @@ class _BlogCard extends StatelessWidget {
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // ✅ important : flexible en ListView
+            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ClipRRect(
@@ -465,69 +466,86 @@ class _BlogCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _Chip(text: post.category, primary: true),
-                        _Chip(text: post.date),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      post.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w900,
-                        color: kDarkColor,
-                        height: 1.25,
+
+              // ✅ Cette zone prend exactement l’espace restant, et le texte s’adapte (plus d’overflow)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ✅ chips 1 ligne (scroll)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            _Chip(text: post.category, primary: true),
+                            const SizedBox(width: 8),
+                            _Chip(text: post.date),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      post.excerpt,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 13.5,
-                        height: 1.55,
-                        fontWeight: FontWeight.w600,
-                        color: kDarkColor.withOpacity(0.75),
+
+                      const SizedBox(height: 10),
+
+                      Text(
+                        post.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w900,
+                          color: kDarkColor,
+                          height: 1.25,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Text(
-                          "Lire",
+
+                      const SizedBox(height: 8),
+
+                      // ✅ Important : l’extrait prend le reste (et ne force jamais un overflow)
+                      Expanded(
+                        child: Text(
+                          post.excerpt,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            color: kPrimaryColor,
+                            fontSize: 13.5,
+                            height: 1.55,
+                            fontWeight: FontWeight.w600,
+                            color: kDarkColor.withOpacity(0.75),
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        Icon(Icons.arrow_forward_rounded, size: 18, color: kPrimaryColor),
-                        const Spacer(),
-                        Text(
-                          post.readTime,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: kTextLight,
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Text(
+                            "Lire",
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              color: kPrimaryColor,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 6),
+                          Icon(Icons.arrow_forward_rounded, size: 18, color: kPrimaryColor),
+                          const Spacer(),
+                          Text(
+                            post.readTime,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: kTextLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
